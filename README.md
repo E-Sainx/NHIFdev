@@ -31,7 +31,7 @@ Follow these steps to set up and run the project on your local machine.
 
 1. **Clone the Repository**:
    ```sh
-   git clone https://github.com/E-Sainx/blockchain-health-insurance.git
+   git clone https://github.com/E-Sainx/NHIFdev.git
    cd blockchain-health-insurance
    ```
 
