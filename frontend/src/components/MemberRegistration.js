@@ -56,7 +56,7 @@ export function MemberRegistration({ nhifContract, setTransactionError, setTxBei
           />
         </div>
         <div className="form-group">
-          <input className="btn btn-primary" type="submit" value="Register Member" />
+          <input className="btn bg-customBlue" type="submit" value="Register Member" />
         </div>
       </form>
     </div>

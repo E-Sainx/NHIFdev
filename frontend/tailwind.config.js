@@ -5,8 +5,11 @@ module.exports = {
     './public/index.html' // Ensure the main HTML file is included
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        customBlue: '#00afef', // Add your custom color here
+      },
+    },
   },
   plugins: [],
 }
-

@@ -71,7 +71,7 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
         </div>
         <div className="form-group">
           <input
-            className="btn btn-primary w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="btn bg-customBlue w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             type="submit"
             value="Fetch Member Data"
           />
@@ -100,7 +100,7 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
             </div>
             <div className="form-group">
               <input
-                className="btn btn-primary w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                className="btn bg-customBlue w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 type="submit"
                 value="Make Contribution"
               />

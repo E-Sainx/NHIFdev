@@ -86,12 +86,7 @@ export function Dapp() {
         />
       ) : (
         <>
-          <div className="row">
-            <div className="col-12">
-              <h1>NHIF Management System</h1>
-              <p>Welcome <b>{selectedAddress}</b></p>
-            </div>
-          </div>
+          
 
           <hr />
 

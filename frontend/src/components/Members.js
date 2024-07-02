@@ -31,11 +31,17 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
   return (
     <Router>
       <div className="min-h-screen bg-gray-100 flex flex-col">
-        <nav className="bg-blue-600 text-white py-4 shadow-md">
+        <nav className="bg-customBlue text-white py-4 shadow-md">
           <div className="container mx-auto flex justify-between">
             <Link to="/" className="text-2xl font-bold">
               NHIF Members
             </Link>
+            <div className="row">
+            <div className="col-12">
+              <h1>NHIF Management System</h1>
+              <p>Welcome <b>{selectedAddress}</b></p>
+            </div>
+          </div>
             <ul className="flex space-x-4">
               <li>
                 <Link to="/members/register" className="hover:text-gray-200">
