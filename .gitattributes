@@ -1,1 +1,2 @@
+# Ensure that .sol files are recognized as Solidity by GitHub's language statistics
 *.sol linguist-language=Solidity
