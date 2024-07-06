@@ -6,7 +6,7 @@ import { NoWalletDetected } from './NoWalletDetected';
 import { ConnectWallet } from './ConnectWallet';
 import { TransactionErrorMessage } from './TransactionErrorMessage';
 import { WaitingForTransactionMessage } from './WaitingForTransactionMessage';
-import { Members } from './Members';
+import { Members } from '../components/members/Members';
 
 const HARDHAT_NETWORK_ID = '31337';
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;

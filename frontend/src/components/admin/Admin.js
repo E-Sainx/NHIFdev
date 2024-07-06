@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import NHIF from '../contracts/Token.json';
-import { MemberRegistration } from './MemberRegistration';
-import { MemberActions } from './MemberActions';
+import NHIF from '../../contracts/Token.json';
+import AdminActions from './AdminActions';
+import AdminDashboard from './AdminDashboard';
 
 const contractAddress = '0x95c2Ea24993E2903BDbe3239399D22Ab3Ac4e5DB';
 
-export function Members({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
+export function Admin({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nhifContract, setNHIFContract] = useState(null);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
         <nav className="bg-customBlue text-white py-4 shadow-md">
           <div className="container mx-auto flex justify-between">
             <Link to="/" className="text-2xl font-bold">
-              NHIF Members
+              NHIF Admin Dashboard
             </Link>
             <div className="row">
             <div className="col-12">
@@ -44,13 +44,13 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
           </div>
             <ul className="flex space-x-4">
               <li>
-                <Link to="/members/register" className="hover:text-gray-200">
-                  Register Member
+                <Link to="/admin/dashboard" className="hover:text-gray-200">
+                  Admin Dashboard 
                 </Link>
               </li>
               <li>
-                <Link to="/members/actions" className="hover:text-gray-200">
-                  Member Actions
+                <Link to="/admin/actions" className="hover:text-gray-200">
+                  Admin Actions
                 </Link>
               </li>
             </ul>
@@ -60,9 +60,9 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
         <div className="flex-grow container mx-auto p-4">
           <Routes>
             <Route
-              path="/members/register"
+              path="/admin"
               element={
-                <MemberRegistration
+                <AdminDashboard
                   nhifContract={nhifContract}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
@@ -70,9 +70,9 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
               }
             />
             <Route
-              path="/members/actions"
+              path="/admin/actions"
               element={
-                <MemberActions
+                <AdminActions
                   nhifContract={nhifContract}
                   selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
@@ -86,3 +86,4 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
     </Router>
   );
 }
+export default Admin;
