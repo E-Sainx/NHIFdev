@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import NHIF from '../../contracts/Token.json';
+import NHIF from '../contracts/Token.json';
 import { MemberRegistration } from './MemberRegistration';
 import { MemberActions } from './MemberActions';
-
-const contractAddress = '0x95c2Ea24993E2903BDbe3239399D22Ab3Ac4e5DB';
+import MemberLanding from './MemberLanding';
+const contractAddress = '0x04F607DF0A0CA5B7a3992F9F5F3657aE3Ce4e6a3';
 
 export function Members({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nhifContract, setNHIFContract] = useState(null);
@@ -32,16 +32,14 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
     <Router>
       <div className="min-h-screen bg-gray-100 flex flex-col">
         <nav className="bg-customBlue text-white py-4 shadow-md">
-          <div className="container mx-auto flex justify-between">
+          <div className="container mx-auto flex justify-between items-center">
             <Link to="/" className="text-2xl font-bold">
               NHIF Members
             </Link>
-            <div className="row">
-            <div className="col-12">
-              <h1>NHIF Management System</h1>
+            <div className="text-right">
+              <h1 className="text-xl font-bold">NHIF Management System</h1>
               <p>Welcome <b>{selectedAddress}</b></p>
             </div>
-          </div>
             <ul className="flex space-x-4">
               <li>
                 <Link to="/members/register" className="hover:text-gray-200">
@@ -58,7 +56,19 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
         </nav>
 
         <div className="flex-grow container mx-auto p-4">
+        
+
           <Routes>
+            <Route
+              path="/"
+              element={
+                <MemberLanding
+                  nhifContract={nhifContract}
+                  setTransactionError={setTransactionError}
+                  setTxBeingSent={setTxBeingSent}
+                />
+              }
+            />
             <Route
               path="/members/register"
               element={

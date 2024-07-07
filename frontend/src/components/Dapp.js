@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import NHIFArtifact from '../contracts/Token.json';
-import contractAddress from '../contracts/contract-address.json';
+import NHIF from '../components/contracts/Token.json';
+import contractAddress from '../components/contracts/contract-address.json';
 import { NoWalletDetected } from './NoWalletDetected';
 import { ConnectWallet } from './ConnectWallet';
 import { TransactionErrorMessage } from './TransactionErrorMessage';
@@ -27,7 +27,7 @@ export function Dapp() {
 
         const nhifContract = new ethers.Contract(
           contractAddress.NHIF,
-          NHIFArtifact.abi,
+          NHIF.abi,
           provider.getSigner(0)
         );
         setNHIFContract(nhifContract);
@@ -84,7 +84,10 @@ export function Dapp() {
           networkError={networkError}
           dismiss={dismissNetworkError}
         />
+
+      
       ) : (
+       
         <>
           
 

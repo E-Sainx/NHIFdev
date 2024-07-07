@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
 
-export function AdminActions({ nhifContract, setTransactionError, setTxBeingSent }) {
+const AdminActions = ({ nhifContract, setTransactionError, setTxBeingSent }) => {
   const [providerId, setProviderId] = useState('');
   const [memberId, setMemberId] = useState('');
 

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import NHIF from '../../contracts/Token.json';
+import { Slide, Fade } from 'react-awesome-reveal';
+import NHIF from '../contracts/Token.json';
 import ProviderRegistration from './ProviderRegistragion'; // Corrected import
 import ProviderActions from './ProviderActions'; // Corrected import
+import ProviderLanding from './ProviderLanding';
 
-const contractAddress = '0x95c2Ea24993E2903BDbe3239399D22Ab3Ac4e5DB'; // Replace with your contract address
+const contractAddress = '0x04F607DF0A0CA5B7a3992F9F5F3657aE3Ce4e6a3'; // Replace with your contract address
 
 export function Providers({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nhifContract, setNHIFContract] = useState(null);
@@ -34,7 +36,7 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
             <Link to="/" className="text-2xl font-bold">
               NHIF Providers
             </Link>
-            <div>
+            <div className="text-right">
               <h1 className="text-xl font-bold">NHIF Management System</h1>
               <p>Welcome <b>{selectedAddress}</b></p>
             </div>
@@ -54,7 +56,20 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
         </nav>
 
         <div className="flex-grow container mx-auto p-4">
+          {/* Additional Information and Animations */}
+          
+
           <Routes>
+          <Route
+              path="/"
+              element={
+                <ProviderLanding
+                  nhifContract={nhifContract}
+                  setTransactionError={setTransactionError}
+                  setTxBeingSent={setTxBeingSent}
+                />
+              }
+            />
             <Route
               path="/providers/register"
               element={

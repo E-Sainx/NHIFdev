@@ -6,8 +6,8 @@ import { Dapp } from './Dapp';
 import { Members } from '../components/members/Members';
 import Providers from '../components/providers/Providers';
 import Admin from '../components/admin/Admin'; // Assuming you have an Admin component
-import NHIFArtifact from '../contracts/Token.json';
-import contractAddress from '../contracts/contract-address.json';
+import NHIFArtifact from '../components/contracts/Token.json';
+import contractAddress from '../components/contracts/contract-address.json';
 
 const Layout = () => {
     const [currentView, setCurrentView] = useState('dapp');
