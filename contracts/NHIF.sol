@@ -5,6 +5,13 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract NHIF is ReentrancyGuard, Ownable {
+    uint256 public monthlyContributionWei; // Monthly contribution in wei
+
+    constructor(uint256 _monthlyContributionWei) Ownable(msg.sender) {
+        monthlyContributionWei = _monthlyContributionWei;
+    }
+
+
     struct Member {
         string name;
         uint256 lastContributionDate;
@@ -20,7 +27,12 @@ contract NHIF is ReentrancyGuard, Ownable {
         ClaimStatus status;
     }
 
-    enum ClaimStatus { Submitted, UnderReview, Approved, Rejected }
+    enum ClaimStatus {
+        Submitted,
+        UnderReview,
+        Approved,
+        Rejected
+    }
 
     mapping(uint256 => Member) public members; // nationalId => Member
     mapping(address => bool) public providers;
@@ -28,7 +40,6 @@ contract NHIF is ReentrancyGuard, Ownable {
 
     Claim[] public claims;
 
-    uint256 public monthlyContributionWei; // Monthly contribution in wei
     uint256 public constant AUTO_APPROVE_LIMIT = 100 ether;
     uint256 public constant MAX_CLAIM_AMOUNT = 1000 ether;
     uint256 public constant YEARLY_CLAIM_LIMIT = 5000 ether;
@@ -40,10 +51,6 @@ contract NHIF is ReentrancyGuard, Ownable {
     event ClaimPaid(uint256 indexed claimId, address provider, uint256 amount);
     event ProviderRegistered(address provider);
     event ProviderRemoved(address provider);
-
-    constructor(uint256 _monthlyContributionWei) Ownable(msg.sender) {
-        monthlyContributionWei = _monthlyContributionWei;
-    }
 
     modifier onlyProvider() {
         require(providers[msg.sender], "Only registered providers can call this function");
@@ -82,7 +89,7 @@ contract NHIF is ReentrancyGuard, Ownable {
         require(_nationalId != 0, "Invalid national ID");
         require(isMemberActive(_nationalId), "Member not registered or inactive");
         require(msg.value == monthlyContributionWei, "Incorrect contribution amount");
-        
+
         members[_nationalId].lastContributionDate = block.timestamp;
         emit ContributionPaid(_nationalId, msg.value, msg.sender);
     }
