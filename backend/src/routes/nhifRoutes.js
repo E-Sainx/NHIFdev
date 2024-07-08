@@ -7,10 +7,18 @@ const contractABI = require('../../../artifacts/contracts/NHIF.sol/NHIF.json');
 
 require('dotenv').config();
 
-// Update to use Sepolia network
-const provider = new ethers.providers.JsonRpcProvider(`https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`);
+const contractAddress = process.env.CONTRACT_ADDRESS;
+console.log("Alchemy API Key:", process.env.ALCHEMY_API_KEY);
+console.log("Contract Address:", contractAddress);
+
+const provider = new ethers.JsonRpcProvider(`https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`);
+console.log("Provider:", provider);
+
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-const nhifContract = new ethers.Contract(process.env.CONTRACT_ADDRESS, contractABI.abi, wallet);
+console.log("Wallet Address:", wallet.address);
+
+const nhifContract = new ethers.Contract(contractAddress, contractABI.abi, wallet);
+console.log("NHIF Contract Address:", nhifContract.address);
 
 // Example route to register a member
 router.post('/registerMember', async (req, res) => {
@@ -20,7 +28,7 @@ router.post('/registerMember', async (req, res) => {
     await tx.wait();
     res.status(200).send({ message: 'Member registered successfully', tx });
   } catch (error) {
-    console.error(error);
+    console.error("Error:", error);
     res.status(500).send({ error: 'Failed to register member' });
   }
 });

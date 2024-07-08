@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Slide, Fade } from 'react-awesome-reveal';
+import { Slide } from 'react-awesome-reveal';
+import axios from 'axios';
 
 export function MemberRegistration({ nhifContract, setTransactionError, setTxBeingSent }) {
   const [nationalId, setNationalId] = useState('');
@@ -16,9 +17,20 @@ export function MemberRegistration({ nhifContract, setTransactionError, setTxBei
         await tx.wait();
         console.log("Transaction confirmed");
         setTxBeingSent(null);
-        alert("Member registered successfully!");
-        setNationalId('');
-        setName('');
+
+        // Store data in MongoDB
+        const response = await axios.post('http://localhost:5000/api/registerMember', {
+          nationalId,
+          name,
+        });
+
+        if (response.status === 200) {
+          alert("Member registered successfully!");
+          setNationalId('');
+          setName('');
+        } else {
+          setTransactionError(response.data.error);
+        }
       } catch (error) {
         console.error("Error registering member:", error);
         setTransactionError("Error registering member: " + error.message);
@@ -65,4 +77,5 @@ export function MemberRegistration({ nhifContract, setTransactionError, setTxBei
     </Slide>
   );
 }
+
 export default MemberRegistration;
