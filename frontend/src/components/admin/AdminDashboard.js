@@ -1,8 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaUserPlus, FaUserCheck, FaMoneyBillWave, FaHospital, FaTrash, FaFileAlt, FaClipboardCheck, FaCog, FaCoins, FaCheck, FaList } from 'react-icons/fa';
+import NHIF from '../contracts/Token.json'
+import { ethers } from 'ethers';
 
-const AdminDashboard = ({ nhifContract, setTransactionError, setTxBeingSent }) => {
+
+const AdminDashboard = ({ provider, selectedAddress, setTransactionError, setTxBeingSent }) => {
+  const contractAddress = '0x04F607DF0A0CA5B7a3992F9F5F3657aE3Ce4e6a3'; // Replace with your contract address
+  const [nhifContract, setNHIFContract] = useState(null);
+
+  useEffect(() => {
+    const initializeContract = async () => {
+      if (provider) {
+        try {
+          const signer = provider.getSigner();
+          const contract = new ethers.Contract(contractAddress, NHIF.abi, signer);
+          setNHIFContract(contract);
+        } catch (error) {
+          setTransactionError("Failed to initialize contract: " + error.message);
+        }
+      }
+    };
+
+    initializeContract();
+  }, [provider, setTransactionError]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold text-center text-blue-900 mb-8">NHIF Admin Dashboard</h1>

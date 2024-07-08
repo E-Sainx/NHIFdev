@@ -3,11 +3,13 @@ import { ethers } from 'ethers';
 import Header from './Header';
 import Footer from './Footer';
 import { Dapp } from './Dapp';
-import { Members } from '../components/members/Members';
-import Providers from '../components/providers/Providers';
-import Admin from '../components/admin/Admin'; // Assuming you have an Admin component
-import NHIFArtifact from '../components/contracts/Token.json';
-import contractAddress from '../components/contracts/contract-address.json';
+import Members from './members/Members';
+import Providers from './providers/Providers';
+import Admin from './admin/Admin';
+import NHIFArtifact from './contracts/Token.json';
+import contractAddress from './contracts/contract-address.json';
+import { ConnectWallet } from './ConnectWallet';
+import { toast } from 'react-toastify';
 
 const Layout = () => {
     const [currentView, setCurrentView] = useState('dapp');
@@ -16,6 +18,7 @@ const Layout = () => {
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [transactionError, setTransactionError] = useState(null);
     const [txBeingSent, setTxBeingSent] = useState(null);
+    const [networkError, setNetworkError] = useState(null);
 
     useEffect(() => {
         const initialize = async () => {
@@ -35,6 +38,8 @@ const Layout = () => {
                 } catch (error) {
                     console.error('Failed to connect wallet:', error);
                 }
+            } else {
+                console.error('Please install MetaMask!');
             }
         };
 
@@ -51,12 +56,28 @@ const Layout = () => {
         try {
             const [selectedAddress] = await window.ethereum.request({ method: 'eth_requestAccounts' });
             setSelectedAddress(selectedAddress);
+            setNetworkError(null);
         } catch (error) {
             console.error('Failed to connect wallet:', error);
+            setNetworkError('Failed to connect wallet. Please try again.');
         }
     };
 
+    const dismissNetworkError = () => {
+        setNetworkError(null);
+    };
+
     const renderContent = () => {
+        if (!selectedAddress) {
+            return (
+                <ConnectWallet
+                    connectWallet={connectWallet}
+                    networkError={networkError}
+                    dismiss={dismissNetworkError}
+                />
+            );
+        }
+
         switch (currentView) {
             case 'members':
                 return (
@@ -69,26 +90,47 @@ const Layout = () => {
                     />
                 );
             case 'providers':
-                return <Providers
-                provider={provider}
-                nhifContract={nhifContract}
-                selectedAddress={selectedAddress}
-                setTransactionError={setTransactionError}
-                setTxBeingSent={setTxBeingSent}
-            />
-            ;
+                return (
+                    <Providers
+                        provider={provider}
+                        nhifContract={nhifContract}
+                        selectedAddress={selectedAddress}
+                        setTransactionError={setTransactionError}
+                        setTxBeingSent={setTxBeingSent}
+                    />
+                );
             case 'admin':
-                return <Admin 
-            
-                />;
+                return (
+                    <Admin
+                        provider={provider}
+                        nhifContract={nhifContract}
+                        selectedAddress={selectedAddress}
+                        setTransactionError={setTransactionError}
+                        setTxBeingSent={setTxBeingSent}
+                    />
+                );
             default:
                 return <Dapp />;
         }
     };
 
+    useEffect(() => {
+        if (transactionError) {
+            toast.error(transactionError);
+            setTransactionError(null);
+        }
+    }, [transactionError]);
+
+    useEffect(() => {
+        if (txBeingSent) {
+            toast.info(`Transaction sent: ${txBeingSent}`);
+            setTxBeingSent(null);
+        }
+    }, [txBeingSent]);
+
     return (
         <div className="min-h-screen flex flex-col">
-            <Header onNavigate={setCurrentView} />
+            <Header address={selectedAddress} onNavigate={setCurrentView} />
             <main className="flex-grow">
                 {renderContent()}
             </main>

@@ -64,7 +64,8 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
               path="/"
               element={
                 <ProviderLanding
-                  nhifContract={nhifContract}
+                nhifContract={nhifContract}
+                  selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
                 />
@@ -74,7 +75,8 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
               path="/providers/register"
               element={
                 <ProviderRegistration
-                  nhifContract={nhifContract}
+                nhifContract={nhifContract}
+                  selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
                 />
@@ -84,7 +86,7 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
               path="/providers/actions"
               element={
                 <ProviderActions
-                  nhifContract={nhifContract}
+                nhifContract={nhifContract}
                   selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
