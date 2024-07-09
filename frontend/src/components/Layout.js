@@ -129,7 +129,7 @@ const Layout = () => {
     }, [txBeingSent]);
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="max-h-screen flex flex-col">
             <Header address={selectedAddress} onNavigate={setCurrentView} />
             <main className="flex-grow">
                 {renderContent()}

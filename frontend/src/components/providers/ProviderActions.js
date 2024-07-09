@@ -85,7 +85,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
 
   return (
     <Slide direction="up">
-      <div className="max-w-lg mx-auto p-4 bg-white shadow-md rounded-md">
+      <div className="mx-auto p-4 bg-white shadow-md rounded-md">
         <h2 className="text-2xl font-bold mb-4 text-customBlue">Provider Actions</h2>
 
         {/* Register Provider */}
@@ -101,13 +101,16 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
               placeholder="Enter Provider Address"
             />
           </div>
+          <div className="form-group flex justify-center">
+
           <button
-            className="btn bg-customBlue w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="btn bg-customBlue w-60 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             onClick={registerProvider}
             disabled={txBeingSent}
           >
             Register Provider
           </button>
+          </div>
         </div>
 
         {/* Remove Provider */}
@@ -123,13 +126,16 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
               placeholder="Enter Provider Address"
             />
           </div>
+          <div className="form-group flex justify-center">
+
           <button
-            className="btn bg-customBlue w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            className="btn bg-customBlue w-60 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             onClick={removeProvider}
             disabled={txBeingSent}
           >
             Remove Provider
           </button>
+          </div>
         </div>
 
         {/* Submit Claim */}
@@ -165,13 +171,16 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
               placeholder="Enter IPFS Hash"
             />
           </div>
+          <div className="form-group flex justify-center">
+
           <button
-            className="btn bg-customBlue w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            className="btn bg-customBlue w-60 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
             onClick={submitClaim}
             disabled={txBeingSent}
           >
             Submit Claim
           </button>
+          </div>
         </div>
 
         {transactionError && <p className="error">{transactionError}</p>}

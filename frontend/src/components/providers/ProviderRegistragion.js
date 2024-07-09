@@ -38,7 +38,7 @@ const ProviderRegistration = ({ nhifContract, setTransactionError, setTxBeingSen
 
   return (
     <Slide direction="up">
-      <div className="max-w-lg mx-auto p-4 bg-white shadow-md rounded-md">
+      <div className="mx-auto p-4 bg-white shadow-md rounded-md">
         <h4 className="text-2xl font-bold mb-4 text-customBlue">Provider Registration</h4>
         <form onSubmit={handleSubmit}>
           <div className="form-group mb-4">
@@ -52,9 +52,9 @@ const ProviderRegistration = ({ nhifContract, setTransactionError, setTxBeingSen
               required
             />
           </div>
-          <div className="form-group">
+          <div className="form-group flex justify-center">
             <input
-              className="btn bg-customBlue w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="btn bg-customBlue w-60 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               type="submit"
               value="Register Provider"
             />
