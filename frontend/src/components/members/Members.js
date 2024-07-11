@@ -63,7 +63,8 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
               path="/"
               element={
                 <MemberLanding
-                  nhifContract={nhifContract}
+                nhifContract={nhifContract}
+                  selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
                 />
@@ -73,7 +74,8 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
               path="/members/register"
               element={
                 <MemberRegistration
-                  nhifContract={nhifContract}
+                nhifContract={nhifContract}
+                  selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
                 />
@@ -96,3 +98,4 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
     </Router>
   );
 }
+export default Members;

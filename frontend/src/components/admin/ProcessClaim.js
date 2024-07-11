@@ -24,7 +24,7 @@ export function ProcessClaim({ nhifContract, setTransactionError, setTxBeingSent
 
   return (
     <Slide direction="up">
-      <div className="mx-auto p-4 bg-white shadow-md rounded-md">
+      <div className="max-w-lg mx-auto p-4 bg-white shadow-md rounded-md">
         <h4 className="text-2xl font-bold mb-4 text-customBlue">Process Claim</h4>
         <form onSubmit={handleSubmit}>
           <div className="form-group mb-4">

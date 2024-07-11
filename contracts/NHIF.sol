@@ -5,6 +5,12 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract NHIF is ReentrancyGuard, Ownable {
+    uint256 public monthlyContributionWei; // Monthly contribution in wei
+
+    constructor(uint256 _monthlyContributionWei) Ownable(msg.sender) {
+        monthlyContributionWei = _monthlyContributionWei;
+    }
+
     struct Member {
         string name;
         uint256 lastContributionDate;
@@ -20,7 +26,12 @@ contract NHIF is ReentrancyGuard, Ownable {
         ClaimStatus status;
     }
 
-    enum ClaimStatus { Submitted, UnderReview, Approved, Rejected }
+    enum ClaimStatus {
+        Submitted,
+        UnderReview,
+        Approved,
+        Rejected
+    }
 
     mapping(uint256 => Member) public members; // nationalId => Member
     mapping(address => bool) public providers;
@@ -28,29 +39,39 @@ contract NHIF is ReentrancyGuard, Ownable {
 
     Claim[] public claims;
 
-    uint256 public monthlyContributionWei; // Monthly contribution in wei
     uint256 public constant AUTO_APPROVE_LIMIT = 100 ether;
     uint256 public constant MAX_CLAIM_AMOUNT = 1000 ether;
     uint256 public constant YEARLY_CLAIM_LIMIT = 5000 ether;
 
     event MemberRegistered(uint256 indexed nationalId, string name);
-    event ContributionPaid(uint256 indexed nationalId, uint256 amount, address payer);
-    event ClaimSubmitted(uint256 indexed claimId, uint256 nationalId, address provider, uint256 amount);
+    event ContributionPaid(
+        uint256 indexed nationalId,
+        uint256 amount,
+        address payer
+    );
+    event ClaimSubmitted(
+        uint256 indexed claimId,
+        uint256 nationalId,
+        address provider,
+        uint256 amount
+    );
     event ClaimStatusUpdated(uint256 indexed claimId, ClaimStatus newStatus);
     event ClaimPaid(uint256 indexed claimId, address provider, uint256 amount);
     event ProviderRegistered(address provider);
     event ProviderRemoved(address provider);
 
-    constructor(uint256 _monthlyContributionWei) Ownable(msg.sender) {
-        monthlyContributionWei = _monthlyContributionWei;
-    }
-
     modifier onlyProvider() {
-        require(providers[msg.sender], "Only registered providers can call this function");
+        require(
+            providers[msg.sender],
+            "Only registered providers can call this function"
+        );
         _;
     }
 
-    function registerMember(uint256 _nationalId, string memory _name) public returns (bool) {
+    function registerMember(
+        uint256 _nationalId,
+        string memory _name
+    ) public returns (bool) {
         require(_nationalId != 0, "Invalid national ID");
         require(bytes(_name).length > 0, "Name cannot be empty");
         if (members[_nationalId].isActive) {
@@ -61,7 +82,17 @@ contract NHIF is ReentrancyGuard, Ownable {
         return true;
     }
 
-    function getMemberStatus(uint256 _nationalId) public view returns (bool isActive, string memory name, uint256 lastContributionDate) {
+    function getMemberStatus(
+        uint256 _nationalId
+    )
+        public
+        view
+        returns (
+            bool isActive,
+            string memory name,
+            uint256 lastContributionDate
+        )
+    {
         Member storage member = members[_nationalId];
         return (member.isActive, member.name, member.lastContributionDate);
     }
@@ -70,7 +101,9 @@ contract NHIF is ReentrancyGuard, Ownable {
         return members[_nationalId].isActive;
     }
 
-    function setMonthlyContribution(uint256 _newContributionWei) public onlyOwner {
+    function setMonthlyContribution(
+        uint256 _newContributionWei
+    ) public onlyOwner {
         monthlyContributionWei = _newContributionWei;
     }
 
@@ -80,9 +113,15 @@ contract NHIF is ReentrancyGuard, Ownable {
 
     function makeContribution(uint256 _nationalId) public payable nonReentrant {
         require(_nationalId != 0, "Invalid national ID");
-        require(isMemberActive(_nationalId), "Member not registered or inactive");
-        require(msg.value == monthlyContributionWei, "Incorrect contribution amount");
-        
+        require(
+            isMemberActive(_nationalId),
+            "Member not registered or inactive"
+        );
+        require(
+            msg.value == monthlyContributionWei,
+            "Incorrect contribution amount"
+        );
+
         members[_nationalId].lastContributionDate = block.timestamp;
         emit ContributionPaid(_nationalId, msg.value, msg.sender);
     }
@@ -99,18 +138,33 @@ contract NHIF is ReentrancyGuard, Ownable {
         emit ProviderRemoved(_provider);
     }
 
-    function submitClaim(uint256 _nationalId, uint256 _amount, string memory _ipfsHash) public onlyProvider nonReentrant {
+    function submitClaim(
+        uint256 _nationalId,
+        uint256 _amount,
+        string memory _ipfsHash
+    ) public onlyProvider nonReentrant {
         require(members[_nationalId].isActive, "Member not registered");
         require(_amount <= MAX_CLAIM_AMOUNT, "Claim amount too high");
-        require(block.timestamp - members[_nationalId].lastContributionDate <= 30 days, "Contribution not up to date");
+        require(
+            block.timestamp - members[_nationalId].lastContributionDate <=
+                30 days,
+            "Contribution not up to date"
+        );
 
         uint256 year = (block.timestamp / 365 days) + 1970;
         memberYearlyClaims[_nationalId][year] += _amount;
-        require(memberYearlyClaims[_nationalId][year] <= YEARLY_CLAIM_LIMIT, "Yearly claim limit exceeded");
+        require(
+            memberYearlyClaims[_nationalId][year] <= YEARLY_CLAIM_LIMIT,
+            "Yearly claim limit exceeded"
+        );
 
         uint256 claimId = claims.length;
-        ClaimStatus status = _amount <= AUTO_APPROVE_LIMIT ? ClaimStatus.Approved : ClaimStatus.UnderReview;
-        claims.push(Claim(_nationalId, msg.sender, _amount, false, _ipfsHash, status));
+        ClaimStatus status = _amount <= AUTO_APPROVE_LIMIT
+            ? ClaimStatus.Approved
+            : ClaimStatus.UnderReview;
+        claims.push(
+            Claim(_nationalId, msg.sender, _amount, false, _ipfsHash, status)
+        );
         emit ClaimSubmitted(claimId, _nationalId, msg.sender, _amount);
         emit ClaimStatusUpdated(claimId, status);
 
@@ -119,11 +173,21 @@ contract NHIF is ReentrancyGuard, Ownable {
         }
     }
 
-    function reviewClaim(uint256 _claimId, ClaimStatus _newStatus) public onlyOwner {
+    function reviewClaim(
+        uint256 _claimId,
+        ClaimStatus _newStatus
+    ) public onlyOwner {
         require(_claimId < claims.length, "Invalid claim ID");
         Claim storage claim = claims[_claimId];
-        require(claim.status == ClaimStatus.UnderReview, "Claim is not under review");
-        require(_newStatus == ClaimStatus.Approved || _newStatus == ClaimStatus.Rejected, "Invalid new status");
+        require(
+            claim.status == ClaimStatus.UnderReview,
+            "Claim is not under review"
+        );
+        require(
+            _newStatus == ClaimStatus.Approved ||
+                _newStatus == ClaimStatus.Rejected,
+            "Invalid new status"
+        );
 
         claim.status = _newStatus;
         emit ClaimStatusUpdated(_claimId, _newStatus);
@@ -152,7 +216,9 @@ contract NHIF is ReentrancyGuard, Ownable {
         payable(owner()).transfer(_amount);
     }
 
-    function isRegisteredProvider(address _provider) public view returns (bool) {
+    function isRegisteredProvider(
+        address _provider
+    ) public view returns (bool) {
         return providers[_provider];
     }
 

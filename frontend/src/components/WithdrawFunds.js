@@ -29,11 +29,11 @@ export function WithdrawFunds({ nhifContract, setTransactionError, setTxBeingSen
 
   return (
     <Slide direction="up">
-      <div className="max-w-lg mx-auto p-4 bg-white shadow-md rounded-md">
+      <div className="mx-auto p-4 bg-white shadow-md rounded-md">
         <h4 className="text-2xl font-bold mb-4 text-customBlue">Withdraw Funds</h4>
         <form onSubmit={handleSubmit}>
           <div className="form-group mb-4">
-            <label className="block text-sm font-medium text-gray-700">Amount (ETH)</label>
+            <label className="block text-sm font-medium text-gray-700">Amount (KES)</label>
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"

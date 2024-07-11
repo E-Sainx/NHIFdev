@@ -29,7 +29,7 @@ export function MemberStatus({ nhifContract }) {
 
   return (
     <Slide direction="up">
-      <div className="max-w-lg mx-auto p-4 bg-white shadow-md rounded-md">
+      <div className="mx-auto p-4 bg-white shadow-md rounded-md">
         <h4 className="text-2xl font-bold mb-4 text-customBlue">Get Member Status</h4>
         <form onSubmit={handleFetchMember} className="mb-4">
           <div className="form-group mb-4">

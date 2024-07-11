@@ -10,8 +10,6 @@ const Header = ({ address, network, balance, onNavigate }) => {
                 {address && (
                     <div className="text-sm">
                         <p>Address: {address}</p>
-                        <p>Network: {network}</p>
-                        <p>Balance: {balance} ETH</p>
                     </div>
                 )}
                 <button

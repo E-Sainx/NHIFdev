@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { Slide, Fade } from 'react-awesome-reveal';
+import { Slide } from 'react-awesome-reveal';
+import axios from 'axios';
 
 export function MemberActions({ nhifContract, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nationalId, setNationalId] = useState('');
   const [memberData, setMemberData] = useState(null);
   const [error, setError] = useState(null);
+  const [contributionKSH, setContributionKSH] = useState('');
+  const exchangeRate = 0.000003; // Hardcoded conversion rate: 1 KSH = 0.000003 ETH
 
   const fetchMemberData = async () => {
     if (nhifContract && nationalId) {
@@ -35,11 +38,12 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
     event.preventDefault();
     if (nhifContract && nationalId) {
       try {
-        console.log("Making contribution...", nationalId);
+        const contributionETH = (parseFloat(contributionKSH) * exchangeRate).toString();
+        console.log("Making contribution...", nationalId, contributionETH, "ETH");
         setTxBeingSent("Making contribution...");
 
         const tx = await nhifContract.makeContribution(nationalId, {
-          value: ethers.utils.parseUnits("0.01", "ether"), // Convert 0.01 ether to wei
+          value: ethers.utils.parseUnits(contributionETH, "ether"), // Convert contribution amount to wei
           gasLimit: ethers.utils.hexlify(100000) // Set manual gas limit (adjust as necessary)
         });
 
@@ -49,6 +53,7 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
         setTxBeingSent(null);
         alert("Contribution made successfully!");
         fetchMemberData();
+        setContributionKSH('');
       } catch (error) {
         console.error("Error making contribution:", error);
         setError("Error making contribution: " + (error.data ? error.data.message : error.message));
@@ -59,7 +64,7 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
 
   return (
     <Slide direction="up">
-      <div className="max-w-lg mx-auto p-4 bg-white shadow-md rounded-md">
+      <div className=" mx-auto p-4 bg-white shadow-md rounded-md">
         <h4 className="text-2xl font-bold mb-4 text-customBlue">Member Actions</h4>
         <form onSubmit={handleFetchMember} className="mb-4">
           <div className="form-group mb-4">
@@ -73,9 +78,9 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
               required
             />
           </div>
-          <div className="form-group">
+          <div className="form-group flex justify-center">
             <input
-              className="btn bg-customBlue w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="btn bg-customBlue w-60 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               type="submit"
               value="Fetch Member Data"
             />
@@ -92,17 +97,19 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
             <h5 className="text-xl font-semibold mt-4 mb-2">Make Contribution</h5>
             <form onSubmit={handleMakeContribution}>
               <div className="form-group mb-4">
-                <label className="block text-sm font-medium text-gray-700">Contribution Amount (ETH)</label>
+                <label className="block text-sm font-medium text-gray-700">Contribution Amount (KSH)</label>
                 <input
                   className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   type="text"
-                  value="0.01" // Fixed value of 0.01 ETH
-                  readOnly
+                  value={contributionKSH}
+                  onChange={(e) => setContributionKSH(e.target.value)}
+                  placeholder="Enter Contribution Amount in KSH (Ksh 500 )"
+                  required
                 />
               </div>
-              <div className="form-group">
+          <div className="form-group flex justify-center">
                 <input
-                  className="btn bg-customBlue w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                  className="btn bg-customBlue w-60  bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                   type="submit"
                   value="Make Contribution"
                 />
@@ -114,3 +121,5 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
     </Slide>
   );
 }
+
+export default MemberActions;
