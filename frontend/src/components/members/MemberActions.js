@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import { Slide } from 'react-awesome-reveal';
-import axios from 'axios';
 
 export function MemberActions({ nhifContract, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nationalId, setNationalId] = useState('');
@@ -64,13 +63,13 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
 
   return (
     <Slide direction="up">
-      <div className=" mx-auto p-4 bg-white shadow-md rounded-md">
-        <h4 className="text-2xl font-bold mb-4 text-customBlue">Member Actions</h4>
-        <form onSubmit={handleFetchMember} className="mb-4">
-          <div className="form-group mb-4">
+      <div className="mx-auto p-6 bg-white shadow-lg rounded-lg">
+        <h4 className="text-2xl font-bold mb-6 text-customBlue">Member Actions</h4>
+        <form onSubmit={handleFetchMember} className="mb-6">
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">National ID</label>
             <input
-              className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
               value={nationalId}
               onChange={(e) => setNationalId(e.target.value)}
@@ -78,9 +77,9 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
               required
             />
           </div>
-          <div className="form-group flex justify-center">
+          <div className="flex justify-center">
             <input
-              className="btn bg-customBlue w-60 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="w-60 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               type="submit"
               value="Fetch Member Data"
             />
@@ -88,28 +87,34 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
         </form>
 
         {memberData && (
-          <div className="mb-4">
-            <h5 className="text-xl font-semibold mb-2">Member Data</h5>
-            <p><strong>Name:</strong> {memberData.name}</p>
-            <p><strong>Last Contribution Date:</strong> {memberData.lastContributionDate}</p>
-            <p><strong>Active:</strong> {memberData.isActive ? 'Yes' : 'No'}</p>
+          <div className="mb-6 p-4 bg-gray-100 rounded-md shadow-sm">
+            <h5 className="text-xl font-semibold mb-4 text-blue-700">Member Data</h5>
+            <div className="mb-2">
+              <p className="text-sm text-gray-700"><strong>Name:</strong> {memberData.name}</p>
+            </div>
+            <div className="mb-2">
+              <p className="text-sm text-gray-700"><strong>Last Contribution Date:</strong> {memberData.lastContributionDate}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-700"><strong>Active:</strong> <span className={memberData.isActive ? "text-green-600" : "text-red-600"}>{memberData.isActive ? 'Yes' : 'No'}</span></p>
+            </div>
 
-            <h5 className="text-xl font-semibold mt-4 mb-2">Make Contribution</h5>
+            <h5 className="text-xl font-semibold mt-6 mb-4 text-blue-700">Make Contribution</h5>
             <form onSubmit={handleMakeContribution}>
-              <div className="form-group mb-4">
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">Contribution Amount (KSH)</label>
                 <input
-                  className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   type="text"
                   value={contributionKSH}
                   onChange={(e) => setContributionKSH(e.target.value)}
-                  placeholder="Enter Contribution Amount in KSH (Ksh 500 )"
+                  placeholder="Enter Contribution Amount in KSH (e.g., Ksh 500)"
                   required
                 />
               </div>
-          <div className="form-group flex justify-center">
+              <div className="flex justify-center">
                 <input
-                  className="btn bg-customBlue w-60  bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                  className="w-60 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                   type="submit"
                   value="Make Contribution"
                 />
@@ -117,6 +122,7 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
             </form>
           </div>
         )}
+        {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
     </Slide>
   );

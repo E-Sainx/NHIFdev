@@ -13,6 +13,8 @@ module.exports = {
     sepolia: {
       url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
       accounts: [`0x${process.env.PRIVATE_KEY}`],
+      chainId: 11155111,
+
     },
   },
   // Add any other configurations or plugins here

@@ -51,16 +51,22 @@ export function MemberStatus({ nhifContract }) {
             />
           </div>
         </form>
-
         {memberData && (
-          <div className="mb-4">
-            <h5 className="text-xl font-semibold mb-2">Member Data</h5>
-            <p><strong>Name:</strong> {memberData.name}</p>
-            <p><strong>Last Contribution Date:</strong> {memberData.lastContributionDate}</p>
-            <p><strong>Active:</strong> {memberData.isActive ? 'Yes' : 'No'}</p>
+          <div className="mb-6 p-4 bg-gray-100 rounded-md shadow-sm">
+            <h5 className="text-xl font-semibold mb-4 text-blue-700">Member Data</h5>
+            <div className="mb-2">
+              <p className="text-sm text-gray-700"><strong>Name:</strong> {memberData.name}</p>
+            </div>
+            <div className="mb-2">
+              <p className="text-sm text-gray-700"><strong>Last Contribution Date:</strong> {memberData.lastContributionDate}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-700"><strong>Active:</strong> <span className={memberData.isActive ? "text-green-600" : "text-red-600"}>{memberData.isActive ? 'Yes' : 'No'}</span></p>
+            </div>
           </div>
         )}
-        {transactionError && <p className="text-red-500">{transactionError}</p>}
+        {transactionError && <p className="text-red-500 mt-4">{transactionError}</p>}
+
       </div>
     </Slide>
   );
