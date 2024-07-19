@@ -1,15 +1,31 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
-import { Slide, Fade } from 'react-awesome-reveal';
+import { create } from 'ipfs-http-client';
+import { Slide } from 'react-awesome-reveal';
+
+// IPFS client setup
+const ipfsClient = create({
+  host: 'ipfs.infura.io',
+  port: 5001,
+  protocol: 'https',
+  headers: {
+    authorization: 'Basic ' + btoa(`${process.env.REACT_APP_INFURA_PROJECT_ID}:${process.env.REACT_APP_INFURA_PROJECT_SECRET}`),
+  },
+});
+
+
 
 const ProviderActions = ({ nhifContract, selectedAddress }) => {
   const [nationalId, setNationalId] = useState('');
-  const [amount, setAmount] = useState('0.01'); // Default to 0.01 ETH
+  const [amountInKES, setAmountInKES] = useState('0'); // Default to 0 KES
+  const [amountInETH, setAmountInETH] = useState('0.01'); // Default to 0.01 ETH
   const [ipfsHash, setIpfsHash] = useState('');
   const [providerAddress, setProviderAddress] = useState('');
   const [transactionError, setTransactionError] = useState(null);
   const [txBeingSent, setTxBeingSent] = useState(null);
   const [isProviderRegistered, setIsProviderRegistered] = useState(false);
+
+  const exchangeRate = 0.000003; // Hardcoded conversion rate: 1 KES = 0.000003 ETH
 
   const checkProviderRegistration = async (address) => {
     try {
@@ -17,7 +33,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
       setIsProviderRegistered(registered);
       return registered;
     } catch (error) {
-      console.error("Error checking provider registration:", error);
+      console.error('Error checking provider registration:', error);
       setTransactionError(error.message);
       return false;
     }
@@ -31,10 +47,11 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
         return;
       }
 
-      console.log(`Submitting claim for National ID: ${nationalId}, Amount: ${amount}, IPFS Hash: ${ipfsHash}`);
+      const amountInETH = (parseFloat(amountInKES) * exchangeRate).toString();
+      console.log(`Submitting claim for National ID: ${nationalId}, Amount: ${amountInETH} ETH, IPFS Hash: ${ipfsHash}`);
       const tx = await nhifContract.submitClaim(
         nationalId,
-        ethers.utils.parseEther(amount), // Convert amount to wei
+        ethers.utils.parseEther(amountInETH), // Convert amount to wei
         ipfsHash,
         { gasLimit: 300000 } // Setting a manual gas limit
       );
@@ -44,7 +61,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
       console.log(`Transaction confirmed: ${tx.hash}`);
       alert('Claim submitted successfully');
     } catch (error) {
-      console.error("Error submitting claim:", error);
+      console.error('Error submitting claim:', error);
       setTransactionError(error.message);
     } finally {
       setTxBeingSent(null);
@@ -60,7 +77,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
       console.log(`Provider registered: ${providerAddress}`);
       alert('Provider registered successfully');
     } catch (error) {
-      console.error("Error registering provider:", error);
+      console.error('Error registering provider:', error);
       setTransactionError(error.message);
     } finally {
       setTxBeingSent(null);
@@ -76,10 +93,28 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
       console.log(`Provider removed: ${providerAddress}`);
       alert('Provider removed successfully');
     } catch (error) {
-      console.error("Error removing provider:", error);
+      console.error('Error removing provider:', error);
       setTransactionError(error.message);
     } finally {
       setTxBeingSent(null);
+    }
+  };
+
+  const uploadToIPFS = async (file) => {
+    try {
+      const added = await ipfsClient.add(file);
+      setIpfsHash(added.path);
+      console.log('IPFS Hash:', added.path);
+    } catch (error) {
+      console.error('Error uploading file to IPFS:', error);
+      setTransactionError('Error uploading file to IPFS.');
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      uploadToIPFS(file);
     }
   };
 
@@ -102,14 +137,13 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
             />
           </div>
           <div className="form-group flex justify-center">
-
-          <button
-            className="btn bg-customBlue w-60 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            onClick={registerProvider}
-            disabled={txBeingSent}
-          >
-            Register Provider
-          </button>
+            <button
+              className="btn bg-customBlue w-60 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              onClick={registerProvider}
+              disabled={txBeingSent}
+            >
+              Register Provider
+            </button>
           </div>
         </div>
 
@@ -127,14 +161,13 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
             />
           </div>
           <div className="form-group flex justify-center">
-
-          <button
-            className="btn bg-customBlue w-60 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-            onClick={removeProvider}
-            disabled={txBeingSent}
-          >
-            Remove Provider
-          </button>
+            <button
+              className="btn bg-customBlue w-60 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              onClick={removeProvider}
+              disabled={txBeingSent}
+            >
+              Remove Provider
+            </button>
           </div>
         </div>
 
@@ -152,13 +185,13 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
             />
           </div>
           <div className="form-group mb-2">
-            <label className="block text-sm font-medium text-gray-700">Amount (ETH)</label>
+            <label className="block text-sm font-medium text-gray-700">Amount (KES)</label>
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter Amount in ETH"
+              value={amountInKES}
+              onChange={(e) => setAmountInKES(e.target.value)}
+              placeholder="Enter Amount in KES"
             />
           </div>
           <div className="form-group mb-2">
@@ -167,19 +200,26 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
               value={ipfsHash}
-              onChange={(e) => setIpfsHash(e.target.value)}
-              placeholder="Enter IPFS Hash"
+              readOnly
+              placeholder="IPFS Hash will appear here"
+            />
+          </div>
+          <div className="form-group mb-2">
+            <label className="block text-sm font-medium text-gray-700">Upload File (Optional)</label>
+            <input
+              className="form-control mt-1 block w-full text-sm text-gray-500 border border-gray-300 rounded-md cursor-pointer"
+              type="file"
+              onChange={handleFileChange}
             />
           </div>
           <div className="form-group flex justify-center">
-
-          <button
-            className="btn bg-customBlue w-60 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-            onClick={submitClaim}
-            disabled={txBeingSent}
-          >
-            Submit Claim
-          </button>
+            <button
+              className="btn bg-customBlue w-60 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              onClick={submitClaim}
+              disabled={txBeingSent}
+            >
+              Submit Claim
+            </button>
           </div>
         </div>
 

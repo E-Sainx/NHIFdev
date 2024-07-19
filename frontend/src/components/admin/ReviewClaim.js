@@ -3,6 +3,7 @@ import { Slide } from 'react-awesome-reveal';
 
 export function ReviewClaim({ nhifContract, setTransactionError, setTxBeingSent }) {
   const [claimId, setClaimId] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (event, status) => {
     event.preventDefault();
@@ -13,12 +14,25 @@ export function ReviewClaim({ nhifContract, setTransactionError, setTxBeingSent 
         await tx.wait();
         alert("Claim status updated successfully!");
         setClaimId('');
+        setError(''); // Clear error on successful transaction
       } catch (error) {
-        setTransactionError("Error reviewing claim: " + error.message);
+        console.error("Error reviewing claim:", error);
+
+        // Extract and format the error message
+        let errorMessage = "Error reviewing claim: ";
+        if (error.message.includes("execution reverted: Invalid claim ID")) {
+          errorMessage += "The claim ID you provided is invalid. Please check the ID and try again.";
+        } else if (error.message.includes("cannot estimate gas")) {
+          errorMessage += "Cannot estimate gas. The transaction may fail or may require a manual gas limit.";
+        } else {
+          errorMessage += error.message;
+        }
+
+        setError(errorMessage);
         setTxBeingSent(null);
       }
     } else {
-      setTransactionError("Contract not initialized");
+      setError("Contract not initialized");
     }
   };
 
@@ -38,7 +52,7 @@ export function ReviewClaim({ nhifContract, setTransactionError, setTxBeingSent 
               required
             />
           </div>
-          <div className="flex justify-around">
+          <div className="flex justify-around mb-4">
             <button
               type="button"
               onClick={(e) => handleSubmit(e, 2)}
@@ -62,6 +76,17 @@ export function ReviewClaim({ nhifContract, setTransactionError, setTxBeingSent 
             </button>
           </div>
         </form>
+        {error && (
+          <div className="mt-4">
+            <p className="text-sm text-red-500">{error}</p>
+            <p className="text-xs text-gray-500 mt-2">
+              For more information, visit{' '}
+              <a href="https://links.ethers.org/v5-errors-UNPREDICTABLE_GAS_LIMIT" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                Ethers Error Documentation
+              </a>.
+            </p>
+          </div>
+        )}
       </div>
     </Slide>
   );
