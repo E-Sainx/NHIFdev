@@ -6,7 +6,7 @@ const Member = require("../models/Member");
 const Claim = require("../models/Claim");
 const Provider = require("../models/Provider");
 const router = express.Router();
-const contractABI = require("../../../artifacts/contracts/NHIF.sol/NHIF.json");
+const contractABI = require("./NHIF.json");
 
 const contractAddress = process.env.CONTRACT_ADDRESS;
 
