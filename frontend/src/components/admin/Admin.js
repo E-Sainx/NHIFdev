@@ -19,7 +19,7 @@ import WithdrawFunds from '../WithdrawFunds';
 import CheckProvider from '../CheckProvider';
 import ClaimList from './ClaimList';
 
-const contractAddress = '0x04F607DF0A0CA5B7a3992F9F5F3657aE3Ce4e6a3';
+const contractAddress = '0x340b44838dE84736279678508d9A46d13d3379fe';
 
 export function Admin({ provider, selectedAddress }) {
   const [nhifContract, setNHIFContract] = useState(null);

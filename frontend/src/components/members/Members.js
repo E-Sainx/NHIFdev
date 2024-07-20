@@ -5,7 +5,7 @@ import NHIF from '../contracts/Token.json';
 import { MemberRegistration } from './MemberRegistration';
 import { MemberActions } from './MemberActions';
 import MemberLanding from './MemberLanding';
-const contractAddress = '0x04F607DF0A0CA5B7a3992F9F5F3657aE3Ce4e6a3';
+const contractAddress = '0x340b44838dE84736279678508d9A46d13d3379fe';
 
 export function Members({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nhifContract, setNHIFContract] = useState(null);

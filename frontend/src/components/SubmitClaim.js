@@ -1,22 +1,36 @@
 import React, { useState } from 'react';
-import { Slide, Fade } from 'react-awesome-reveal';
+import { Slide } from 'react-awesome-reveal';
 import { ethers } from 'ethers';
+import { create } from 'ipfs-http-client';
 
+// IPFS client setup
+const ipfsClient = create({
+  host: 'ipfs.infura.io',
+  port: 5001,
+  protocol: 'https',
+  headers: {
+    authorization: 'Basic ' + btoa(`${process.env.REACT_APP_INFURA_PROJECT_ID}:${process.env.REACT_APP_INFURA_PROJECT_SECRET}`),
+  },
+});
 
 export function SubmitClaim({ nhifContract, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nationalId, setNationalId] = useState('');
-  const [amount, setAmount] = useState('');
+  const [amountInKES, setAmountInKES] = useState('');
   const [ipfsHash, setIpfsHash] = useState('');
+  const [file, setFile] = useState(null);
+
+  const exchangeRate = 0.000003; // Conversion rate: 1 KES = 0.000003 ETH
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (nhifContract) {
       try {
-        console.log(`Submitting claim for National ID: ${nationalId}, Amount: ${amount}, IPFS Hash: ${ipfsHash}`);
+        const amountInETH = (parseFloat(amountInKES) * exchangeRate).toString();
+        console.log(`Submitting claim for National ID: ${nationalId}, Amount: ${amountInETH} ETH, IPFS Hash: ${ipfsHash}`);
         setTxBeingSent("Submitting claim...");
         const tx = await nhifContract.submitClaim(
           nationalId,
-          ethers.utils.parseUnits(amount, 'ether'), // Convert amount to wei
+          ethers.utils.parseUnits(amountInETH, 'ether'), // Convert amount to wei
           ipfsHash,
           { gasLimit: 300000 }
         );
@@ -26,7 +40,7 @@ export function SubmitClaim({ nhifContract, selectedAddress, setTransactionError
         setTxBeingSent(null);
         alert('Claim submitted successfully');
         setNationalId('');
-        setAmount('');
+        setAmountInKES('');
         setIpfsHash('');
       } catch (error) {
         console.error("Error submitting claim:", error);
@@ -36,12 +50,31 @@ export function SubmitClaim({ nhifContract, selectedAddress, setTransactionError
     }
   };
 
+  const uploadToIPFS = async (file) => {
+    try {
+      const added = await ipfsClient.add(file);
+      setIpfsHash(added.path);
+      console.log('IPFS Hash:', added.path);
+    } catch (error) {
+      console.error('Error uploading file to IPFS:', error);
+      setTransactionError('Error uploading file to IPFS.');
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setFile(file);
+      uploadToIPFS(file);
+    }
+  };
+
   return (
     <Slide direction="up">
       <div className="mx-auto p-4 bg-white shadow-md rounded-md">
-        <h4 className="text-2xl font-bold mb-4 text-customBlue">Submit Claim</h4>
+        <h3 className="text-xl font-semibold mb-2">Submit Claim</h3>
         <form onSubmit={handleSubmit}>
-          <div className="form-group mb-4">
+          <div className="form-group mb-2">
             <label className="block text-sm font-medium text-gray-700">National ID</label>
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -49,39 +82,49 @@ export function SubmitClaim({ nhifContract, selectedAddress, setTransactionError
               value={nationalId}
               onChange={(e) => setNationalId(e.target.value)}
               placeholder="Enter National ID"
-              required
             />
           </div>
-          <div className="form-group mb-4">
-            <label className="block text-sm font-medium text-gray-700">Amount (ETH)</label>
+          <div className="form-group mb-2">
+            <label className="block text-sm font-medium text-gray-700">Amount (KES)</label>
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter Amount in ETH"
-              required
+              value={amountInKES}
+              onChange={(e) => setAmountInKES(e.target.value)}
+              placeholder="Enter Amount in KES"
             />
           </div>
-          <div className="form-group mb-4">
+          <div className="form-group mb-2">
             <label className="block text-sm font-medium text-gray-700">IPFS Hash</label>
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
               value={ipfsHash}
-              onChange={(e) => setIpfsHash(e.target.value)}
-              placeholder="Enter IPFS Hash"
-              required
+              readOnly
+              placeholder="IPFS Hash will appear here"
             />
           </div>
-          <div className="form-group">
+          <div className="form-group mb-2">
+            <label className="block text-sm font-medium text-gray-700">Upload File (Optional)</label>
             <input
-              className="btn bg-customBlue w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-              type="submit"
-              value="Submit Claim"
+              className="form-control mt-1 block w-full text-sm text-gray-500 border border-gray-300 rounded-md cursor-pointer"
+              type="file"
+              onChange={handleFileChange}
             />
+          </div>
+          <div className="form-group flex justify-center">
+            <button
+              className="btn bg-customBlue w-60 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              type="submit"
+              disabled={!!setTxBeingSent}
+            >
+              Submit Claim
+            </button>
           </div>
         </form>
+
+        {/* {transactionError && <p className="error">{transactionError}</p>} */}
+        {setTxBeingSent && <p>Transaction sent: {setTxBeingSent}</p>}
       </div>
     </Slide>
   );

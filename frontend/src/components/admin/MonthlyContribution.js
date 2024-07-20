@@ -11,7 +11,10 @@ export function MonthlyContribution({ nhifContract, setTransactionError, setTxBe
       try {
         console.log("Setting monthly contribution...", monthlyContribution);
         setTxBeingSent("Setting monthly contribution...");
-        const tx = await nhifContract.setMonthlyContribution(ethers.utils.parseUnits(monthlyContribution, 'ether'));
+
+        const gasLimit = ethers.utils.hexlify(300000); // Increased gas limit
+        const tx = await nhifContract.setMonthlyContribution(ethers.utils.parseUnits(monthlyContribution, 'ether'), { gasLimit });
+
         console.log("Transaction sent:", tx.hash);
         await tx.wait();
         console.log("Transaction confirmed");
@@ -20,7 +23,13 @@ export function MonthlyContribution({ nhifContract, setTransactionError, setTxBe
         setMonthlyContribution('');
       } catch (error) {
         console.error("Error setting monthly contribution:", error);
-        setTransactionError("Error setting monthly contribution: " + error.message);
+
+        if (error.data && error.data.message) {
+          setTransactionError("Error setting monthly contribution: " + error.data.message);
+        } else {
+          setTransactionError("Error setting monthly contribution: " + error.message);
+        }
+
         setTxBeingSent(null);
       }
     } else {

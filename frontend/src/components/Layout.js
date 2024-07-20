@@ -10,6 +10,7 @@ import NHIFArtifact from './contracts/Token.json';
 import contractAddress from './contracts/contract-address.json';
 import { ConnectWallet } from './ConnectWallet';
 import { toast } from 'react-toastify';
+import { Loading } from './Loading';
 
 const Layout = () => {
     const [currentView, setCurrentView] = useState('dapp');

@@ -4,11 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export function MemberRegistration({
-  nhifContract,
-  setTransactionError,
-  setTxBeingSent,
-}) {
+export function MemberRegistration({ nhifContract, setTransactionError, setTxBeingSent }) {
   const [nationalId, setNationalId] = useState("");
   const [name, setName] = useState("");
 
@@ -25,17 +21,13 @@ export function MemberRegistration({
         await tx.wait();
         console.log("Transaction confirmed");
 
-        // For simulation, uncomment above code and comment below axios post
-
         // Store data in MongoDB via backend API
         const response = await axios.post(
           "https://bcf4d219-6438-45ba-97b4-971f839c9102-00-2thi2cnf7fchk.picard.replit.dev:5000/api/registerMember", // Update with your backend URL
-          {
-            nationalId,
-            name,
-          },
+          { nationalId, name }
         );
 
+        console.log("API response:", response);
         if (response.status === 200) {
           toast.success("Member registered successfully!");
           setNationalId("");
@@ -45,9 +37,19 @@ export function MemberRegistration({
         }
       } catch (error) {
         console.error("Error registering member:", error);
-        setTransactionError("Error registering member: " + error.message);
+
+        // Display user-friendly error message
+        let errorMessage = "An error occurred. Please try again.";
+        if (error.response && error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        // Update state and show error toast
+        setTransactionError("Error registering member: " + errorMessage);
         setTxBeingSent(null);
-        toast.error("Error registering member: " + error.message);
+        toast.error("Error registering member: " + errorMessage);
       }
     } else {
       console.error("Contract not initialized");
@@ -59,14 +61,10 @@ export function MemberRegistration({
   return (
     <Slide direction="up">
       <div className="mx-auto p-4 bg-white shadow-md rounded-md">
-        <h4 className="text-2xl font-bold mb-4 text-customBlue">
-          Member Registration
-        </h4>
+        <h4 className="text-2xl font-bold mb-4 text-customBlue">Member Registration</h4>
         <form onSubmit={handleSubmit}>
           <div className="form-group mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              National ID
-            </label>
+            <label className="block text-sm font-medium text-gray-700">National ID</label>
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
@@ -77,9 +75,7 @@ export function MemberRegistration({
             />
           </div>
           <div className="form-group mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"

@@ -6,6 +6,7 @@ src/contracts
 /node_modules
 /.pnp
 .pnp.js
+.eslintignore
 
 # testing
 /coverage

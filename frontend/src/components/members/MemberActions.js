@@ -7,7 +7,11 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
   const [memberData, setMemberData] = useState(null);
   const [error, setError] = useState(null);
   const [contributionKSH, setContributionKSH] = useState('');
-  const exchangeRate = 0.000003; // Hardcoded conversion rate: 1 KSH = 0.000003 ETH
+  const [balance, setBalance] = useState(null);
+  const [totalContributions, setTotalContributions] = useState(null);
+
+  // Hardcoded conversion rate: 1 ETH = 333,333 KSH
+  const exchangeRate = 0.000003; // 1 ETH = 333,333 KSH
 
   const fetchMemberData = async () => {
     if (nhifContract && nationalId) {
@@ -15,15 +19,29 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
         console.log("Fetching member data...", nationalId);
         const memberStatus = await nhifContract.getMemberStatus(nationalId);
         console.log("Member data received:", memberStatus);
+
         setMemberData({
           name: memberStatus[1],
-          lastContributionDate: new Date(memberStatus[2].toNumber() * 1000).toLocaleString(),
+          lastContributionDate: new Date(memberStatus[2] * 1000).toLocaleString(),
           isActive: memberStatus[0]
         });
+
+        // Fetch and display the member's balance
+        const balanceInETH = await nhifContract.getAddressBalance(selectedAddress);
+        const balanceInKSH = parseFloat(ethers.utils.formatEther(balanceInETH)) * exchangeRate;
+        setBalance({ eth: ethers.utils.formatEther(balanceInETH), ksh: balanceInKSH });
+
+        // Fetch total contributions
+        const totalContributionsInWei = await nhifContract.getMemberTotalContributions(nationalId);
+        const totalContributionsInKSH = parseFloat(ethers.utils.formatEther(totalContributionsInWei)) * exchangeRate;
+        setTotalContributions({ eth: ethers.utils.formatEther(totalContributionsInWei), ksh: totalContributionsInKSH });
+
       } catch (error) {
         console.error("Error fetching member data:", error);
         setError("Error fetching member data: " + error.message);
         setMemberData(null);
+        setBalance(null);
+        setTotalContributions(null);
       }
     }
   };
@@ -37,7 +55,7 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
     event.preventDefault();
     if (nhifContract && nationalId) {
       try {
-        const contributionETH = (parseFloat(contributionKSH) * exchangeRate).toString();
+        const contributionETH = (parseFloat(contributionKSH) / exchangeRate).toString();
         console.log("Making contribution...", nationalId, contributionETH, "ETH");
         setTxBeingSent("Making contribution...");
 
@@ -51,7 +69,7 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
         console.log("Transaction confirmed");
         setTxBeingSent(null);
         alert("Contribution made successfully!");
-        fetchMemberData();
+        fetchMemberData(); // Refresh member data and balance
         setContributionKSH('');
       } catch (error) {
         console.error("Error making contribution:", error);
@@ -95,8 +113,16 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
             <div className="mb-2">
               <p className="text-sm text-gray-700"><strong>Last Contribution Date:</strong> {memberData.lastContributionDate}</p>
             </div>
-            <div>
+            <div className="mb-2">
               <p className="text-sm text-gray-700"><strong>Active:</strong> <span className={memberData.isActive ? "text-green-600" : "text-red-600"}>{memberData.isActive ? 'Yes' : 'No'}</span></p>
+            </div>
+            <div className="mb-2">
+              <p className="text-sm text-gray-700"><strong>Balance (ETH):</strong> {balance ? balance.eth : 'N/A'}</p>
+              <p className="text-sm text-gray-700"><strong>Balance (KES):</strong> {balance ? balance.ksh.toLocaleString() : 'N/A'}</p>
+            </div>
+            <div className="mb-2">
+              <p className="text-sm text-gray-700"><strong>Total Contributions (ETH):</strong> {totalContributions ? totalContributions.eth : 'N/A'}</p>
+              <p className="text-sm text-gray-700"><strong>Total Contributions (KES):</strong> {totalContributions ? totalContributions.ksh.toLocaleString() : 'N/A'}</p>
             </div>
 
             <h5 className="text-xl font-semibold mt-6 mb-4 text-blue-700">Make Contribution</h5>

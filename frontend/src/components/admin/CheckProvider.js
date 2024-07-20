@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
-import { Slide, Fade } from 'react-awesome-reveal';
+import React, { useState } from "react";
+import { Slide } from "react-awesome-reveal";
 
 export function CheckProvider({ nhifContract }) {
-  const [providerAddress, setProviderAddress] = useState('');
+  const [providerAddress, setProviderAddress] = useState("");
   const [isProviderRegistered, setIsProviderRegistered] = useState(null);
   const [transactionError, setTransactionError] = useState(null);
 
   const checkProvider = async () => {
     if (nhifContract && providerAddress) {
       try {
-        const isRegistered = await nhifContract.isRegisteredProvider(providerAddress);
+        setTransactionError(null);
+        const isRegistered =
+          await nhifContract.isRegisteredProvider(providerAddress);
         setIsProviderRegistered(isRegistered);
       } catch (error) {
         setTransactionError("Error checking provider: " + error.message);
@@ -26,10 +28,14 @@ export function CheckProvider({ nhifContract }) {
   return (
     <Slide direction="up">
       <div className="max-w-lg mx-auto p-4 bg-white shadow-md rounded-md">
-        <h4 className="text-2xl font-bold mb-4 text-customBlue">Check Provider</h4>
+        <h4 className="text-2xl font-bold mb-4 text-customBlue">
+          Check Provider
+        </h4>
         <form onSubmit={handleSubmit}>
           <div className="form-group mb-4">
-            <label className="block text-sm font-medium text-gray-700">Provider Address</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Provider Address
+            </label>
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
@@ -49,7 +55,8 @@ export function CheckProvider({ nhifContract }) {
         </form>
         {isProviderRegistered !== null && (
           <p className="mt-4">
-            Provider is {isProviderRegistered ? "registered" : "not registered"}.
+            Provider is {isProviderRegistered ? "registered" : "not registered"}
+            .
           </p>
         )}
         {transactionError && <p className="text-red-500">{transactionError}</p>}

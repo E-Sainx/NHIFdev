@@ -3,11 +3,22 @@ import { Slide } from "react-awesome-reveal";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { ethers } from "ethers";
+
+const counties = [
+  "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet", "Embu", "Garissa",
+  "Homa Bay", "Isiolo", "Kajiado", "Kakamega", "Kericho", "Kiambu", "Kilifi",
+  "Kirinyaga", "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia", "Lamu", "Machakos",
+  "Makueni", "Mandera", "Marsabit", "Meru", "Migori", "Mombasa", "Murang'a",
+  "Nairobi", "Nakuru", "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri", "Samburu",
+  "Siaya", "Taita-Taveta", "Tana River", "Tharaka-Nithi", "Trans Nzoia", "Turkana",
+  "Uasin Gishu", "Vihiga", "Wajir", "West Pokot"
+];
 
 const ProviderRegistration = ({
   nhifContract,
   setTransactionError,
-  setTxBeingSent,
+  setTxBeingSent
 }) => {
   const [providerAddress, setProviderAddress] = useState("");
   const [providerName, setProviderName] = useState("");
@@ -20,6 +31,7 @@ const ProviderRegistration = ({
     event.preventDefault();
     if (nhifContract) {
       try {
+        // Validate Ethereum address format
         if (!/^0x[a-fA-F0-9]{40}$/.test(providerAddress)) {
           throw new Error("Invalid Ethereum address");
         }
@@ -27,14 +39,16 @@ const ProviderRegistration = ({
         console.log("Registering provider...", providerAddress, providerName);
         setTxBeingSent("Registering provider...");
 
-        // Estimate gas
-        const estimatedGas = await nhifContract.estimateGas.registerProvider(providerAddress);
+        // Estimate gas for the transaction
+        const estimatedGas = await nhifContract.estimateGas.selfRegisterProvider();
 
         // Register provider on blockchain
-        const tx = await nhifContract.registerProvider(providerAddress, {
-          gasLimit: estimatedGas,
+        const tx = await nhifContract.selfRegisterProvider({
+          gasLimit: estimatedGas
         });
         console.log("Transaction sent:", tx.hash);
+
+        // Wait for the transaction to be mined
         const receipt = await tx.wait();
         console.log("Transaction confirmed. Receipt:", receipt);
 
@@ -46,14 +60,14 @@ const ProviderRegistration = ({
 
         // Store data in MongoDB via backend API
         const response = await axios.post(
-          "https://bcf4d219-6438-45ba-97b4-971f839c9102-00-2thi2cnf7fchk.picard.replit.dev:5000/api/registerProvider", // Update with your backend URL
+          "https://bcf4d219-6438-45ba-97b4-971f839c9102-00-2thi2cnf7fchk.picard.replit.dev:5000/api/registerProvider",
           {
             providerAddress,
             providerName,
             location,
             services,
             phoneNumber,
-            email,
+            email
           }
         );
 
@@ -66,20 +80,46 @@ const ProviderRegistration = ({
           setPhoneNumber("");
           setEmail("");
         } else {
-          throw new Error(
-            response.data.error || "Failed to register provider"
-          );
+          throw new Error(response.data.error || "Failed to register provider");
         }
       } catch (error) {
-        console.error("Error registering provider:", error);
-        setTransactionError("Error registering provider: " + error.message);
+        console.error("Detailed error information:", error);
+
+        let errorMessage = "An error occurred. Please try again.";
+        if (error.response && error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        setTransactionError("Error registering provider: " + errorMessage);
         setTxBeingSent(null);
-        toast.error("Error registering provider: " + error.message);
+        toast.error("Error registering provider: " + errorMessage);
       }
     } else {
       console.error("Contract not initialized");
       setTransactionError("Contract not initialized");
       toast.error("Contract not initialized");
+    }
+  };
+
+  // Function to test API manually
+  const testAPI = async () => {
+    try {
+      const response = await axios.post(
+        "https://bcf4d219-6438-45ba-97b4-971f839c9102-00-2thi2cnf7fchk.picard.replit.dev:5000/api/registerProvider",
+        {
+          providerAddress,
+          providerName,
+          location,
+          services,
+          phoneNumber,
+          email
+        }
+      );
+      console.log("Response from test API:", response.data);
+    } catch (error) {
+      console.error("Test API error:", error);
     }
   };
 
@@ -120,27 +160,42 @@ const ProviderRegistration = ({
             <label className="block text-sm font-medium text-gray-700">
               Location
             </label>
-            <input
+            <select
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Enter Location"
               required
-            />
+            >
+              <option value="" disabled>
+                Select County
+              </option>
+              {counties.map((county) => (
+                <option key={county} value={county}>
+                  {county}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="form-group mb-4">
             <label className="block text-sm font-medium text-gray-700">
               Services
             </label>
-            <input
+            <select
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              type="text"
               value={services}
               onChange={(e) => setServices(e.target.value)}
-              placeholder="Enter Services"
               required
-            />
+            >
+              <option value="" disabled>
+                Select Healthcare Facility
+              </option>
+              <option value="Private Healthcare Facility">
+                Private Healthcare Facility
+              </option>
+              <option value="Public Healthcare Facility">
+                Public Healthcare Facility
+              </option>
+            </select>
           </div>
           <div className="form-group mb-4">
             <label className="block text-sm font-medium text-gray-700">
@@ -169,13 +224,22 @@ const ProviderRegistration = ({
             />
           </div>
           <div className="form-group flex justify-center">
-            <input
-              className="btn bg-customBlue w-60 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            <button
               type="submit"
-              value="Register Provider"
-            />
+              className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Register Provider
+            </button>
           </div>
         </form>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={testAPI}
+            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Test API
+          </button>
+        </div>
       </div>
     </Slide>
   );

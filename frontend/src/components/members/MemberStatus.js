@@ -1,23 +1,38 @@
-import React, { useState } from 'react';
-import { Slide, Fade } from 'react-awesome-reveal';
+import React, { useState } from "react";
+import { Slide } from "react-awesome-reveal";
+import { ethers } from "ethers"; // Import ethers to use formatEther
 
 export function MemberStatus({ nhifContract }) {
-  const [nationalId, setNationalId] = useState('');
+  const [nationalId, setNationalId] = useState("");
   const [memberData, setMemberData] = useState(null);
+  const [totalContributions, setTotalContributions] = useState(null);
   const [transactionError, setTransactionError] = useState(null);
+  const exchangeRate = 0.000003; // Hardcoded conversion rate: 1 KSH = 0.000003 ETH
 
   const fetchMemberData = async () => {
     if (nhifContract && nationalId) {
       try {
+        // Fetch member status
         const memberStatus = await nhifContract.getMemberStatus(nationalId);
+
+        // Fetch total contributions
+        const totalContributionsInWei = await nhifContract.getMemberTotalContributions(nationalId);
+        const totalContributionsEth = ethers.utils.formatEther(totalContributionsInWei);
+        const totalContributionsKes = (parseFloat(totalContributionsEth) / exchangeRate).toFixed(2);
+
         setMemberData({
           name: memberStatus[1],
           lastContributionDate: new Date(memberStatus[2].toNumber() * 1000).toLocaleString(),
           isActive: memberStatus[0],
         });
+        setTotalContributions({
+          eth: totalContributionsEth,
+          kes: totalContributionsKes,
+        });
       } catch (error) {
         setTransactionError("Error fetching member data: " + error.message);
         setMemberData(null);
+        setTotalContributions(null);
       }
     }
   };
@@ -60,13 +75,16 @@ export function MemberStatus({ nhifContract }) {
             <div className="mb-2">
               <p className="text-sm text-gray-700"><strong>Last Contribution Date:</strong> {memberData.lastContributionDate}</p>
             </div>
+            <div className="mb-2">
+              <p className="text-sm text-gray-700"><strong>Total Contributions (ETH):</strong> {totalContributions ? totalContributions.eth : 'N/A'}</p>
+              <p className="text-sm text-gray-700"><strong>Total Contributions (KES):</strong> {totalContributions ? totalContributions.kes : 'N/A'}</p>
+            </div>
             <div>
               <p className="text-sm text-gray-700"><strong>Active:</strong> <span className={memberData.isActive ? "text-green-600" : "text-red-600"}>{memberData.isActive ? 'Yes' : 'No'}</span></p>
             </div>
           </div>
         )}
         {transactionError && <p className="text-red-500 mt-4">{transactionError}</p>}
-
       </div>
     </Slide>
   );
