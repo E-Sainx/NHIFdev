@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { create } from 'ipfs-http-client';
 import { Slide } from 'react-awesome-reveal';
+import axios from 'axios';
 
 // IPFS client setup
 const ipfsClient = create({
@@ -13,12 +14,10 @@ const ipfsClient = create({
   },
 });
 
-
-
 const ProviderActions = ({ nhifContract, selectedAddress }) => {
   const [nationalId, setNationalId] = useState('');
-  const [amountInKES, setAmountInKES] = useState('0'); // Default to 0 KES
-  const [amountInETH, setAmountInETH] = useState('0.01'); // Default to 0.01 ETH
+  const [amountInKES, setAmountInKES] = useState('0');
+  const [amountInETH, setAmountInETH] = useState('0.01');
   const [ipfsHash, setIpfsHash] = useState('');
   const [providerAddress, setProviderAddress] = useState('');
   const [transactionError, setTransactionError] = useState(null);
@@ -26,6 +25,10 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
   const [isProviderRegistered, setIsProviderRegistered] = useState(false);
 
   const exchangeRate = 0.000003; // Hardcoded conversion rate: 1 KES = 0.000003 ETH
+
+  useEffect(() => {
+    checkProviderRegistration(selectedAddress);
+  }, [selectedAddress]);
 
   const checkProviderRegistration = async (address) => {
     try {
@@ -49,17 +52,29 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
 
       const amountInETH = (parseFloat(amountInKES) * exchangeRate).toString();
       console.log(`Submitting claim for National ID: ${nationalId}, Amount: ${amountInETH} ETH, IPFS Hash: ${ipfsHash}`);
+      
+      // Submit claim to blockchain
       const tx = await nhifContract.submitClaim(
         nationalId,
-        ethers.utils.parseEther(amountInETH), // Convert amount to wei
+        ethers.utils.parseEther(amountInETH),
         ipfsHash,
-        { gasLimit: 300000 } // Setting a manual gas limit
+        { gasLimit: 300000 }
       );
       setTxBeingSent(tx.hash);
       console.log(`Transaction sent: ${tx.hash}`);
       await tx.wait();
       console.log(`Transaction confirmed: ${tx.hash}`);
-      alert('Claim submitted successfully');
+
+      // Store claim in database
+      await axios.post('/api/claims', {
+        nationalId,
+        provider: selectedAddress,
+        amount: parseFloat(amountInKES),
+        ipfsHash,
+        status: 'Submitted'
+      });
+
+      alert('Claim submitted successfully to blockchain and database');
     } catch (error) {
       console.error('Error submitting claim:', error);
       setTransactionError(error.message);
@@ -68,21 +83,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
     }
   };
 
-  const registerProvider = async () => {
-    try {
-      console.log(`Registering provider: ${providerAddress}`);
-      const tx = await nhifContract.registerProvider(providerAddress, { gasLimit: 300000 });
-      setTxBeingSent(tx.hash);
-      await tx.wait();
-      console.log(`Provider registered: ${providerAddress}`);
-      alert('Provider registered successfully');
-    } catch (error) {
-      console.error('Error registering provider:', error);
-      setTransactionError(error.message);
-    } finally {
-      setTxBeingSent(null);
-    }
-  };
+
 
   const removeProvider = async () => {
     try {
@@ -90,8 +91,12 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
       const tx = await nhifContract.removeProvider(providerAddress, { gasLimit: 300000 });
       setTxBeingSent(tx.hash);
       await tx.wait();
+      
+      // Remove provider from database
+      await axios.delete(`/api/providers/${providerAddress}`);
+
       console.log(`Provider removed: ${providerAddress}`);
-      alert('Provider removed successfully');
+      alert('Provider removed successfully from blockchain and database');
     } catch (error) {
       console.error('Error removing provider:', error);
       setTransactionError(error.message);
@@ -118,40 +123,18 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
     }
   };
 
+  // The JSX return statement remains unchanged
   return (
     <Slide direction="up">
       <div className="mx-auto p-4 bg-white shadow-md rounded-md">
-        <h2 className="text-2xl font-bold mb-4 text-customBlue">Provider Actions</h2>
+        <h2 className="text-2xl font-bold mb-4 text-customBlue">Hospital Actions</h2>
 
-        {/* Register Provider */}
-        <div className="mb-4">
-          <h3 className="text-xl font-semibold mb-2">Register Provider</h3>
-          <div className="form-group mb-2">
-            <label className="block text-sm font-medium text-gray-700">Provider Address</label>
-            <input
-              className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              type="text"
-              value={providerAddress}
-              onChange={(e) => setProviderAddress(e.target.value)}
-              placeholder="Enter Provider Address"
-            />
-          </div>
-          <div className="form-group flex justify-center">
-            <button
-              className="btn bg-customBlue w-60 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              onClick={registerProvider}
-              disabled={txBeingSent}
-            >
-              Register Provider
-            </button>
-          </div>
-        </div>
 
         {/* Remove Provider */}
         <div className="mb-4">
-          <h3 className="text-xl font-semibold mb-2">Remove Provider</h3>
+          <h3 className="text-xl font-semibold mb-2">Remove Hospital Account</h3>
           <div className="form-group mb-2">
-            <label className="block text-sm font-medium text-gray-700">Provider Address</label>
+            <label className="block text-sm font-medium text-gray-700">Hospital Address</label>
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
@@ -166,7 +149,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
               onClick={removeProvider}
               disabled={txBeingSent}
             >
-              Remove Provider
+              Remove Hospital
             </button>
           </div>
         </div>
@@ -205,7 +188,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
             />
           </div>
           <div className="form-group mb-2">
-            <label className="block text-sm font-medium text-gray-700">Upload File (Optional)</label>
+            <label className="block text-sm font-medium text-gray-700">Upload Medical File (Optional)</label>
             <input
               className="form-control mt-1 block w-full text-sm text-gray-500 border border-gray-300 rounded-md cursor-pointer"
               type="file"

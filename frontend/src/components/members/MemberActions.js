@@ -1,17 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { Slide } from 'react-awesome-reveal';
+import { TrendingUp } from 'lucide-react';
 
 export function MemberActions({ nhifContract, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nationalId, setNationalId] = useState('');
   const [memberData, setMemberData] = useState(null);
   const [error, setError] = useState(null);
-  const [contributionKSH, setContributionKSH] = useState('');
   const [balance, setBalance] = useState(null);
   const [totalContributions, setTotalContributions] = useState(null);
+  const [txStatus, setTxStatus] = useState('');
+  const [monthlyContributionKSH, setMonthlyContributionKSH] = useState('');
+  const [monthlyContributionETH, setMonthlyContributionETH] = useState('');
 
-  // Hardcoded conversion rate: 1 ETH = 333,333 KSH
-  const exchangeRate = 0.000003; // 1 ETH = 333,333 KSH
+  // Updated conversion rate: 1 ETH = 333,333 KSH (as of July 2024)
+  const ETH_TO_KSH_RATE = 333333;
+  const KSH_TO_ETH_RATE = 1 / ETH_TO_KSH_RATE;
+
+  useEffect(() => {
+    const fetchMonthlyContribution = async () => {
+      if (nhifContract) {
+        try {
+          const monthlyContributionWei = await nhifContract.getMonthlyContribution();
+          const monthlyContributionETH = ethers.utils.formatEther(monthlyContributionWei);
+          const monthlyContributionKSH = parseFloat(monthlyContributionETH) * ETH_TO_KSH_RATE;
+          setMonthlyContributionETH(monthlyContributionETH);
+          setMonthlyContributionKSH(monthlyContributionKSH.toFixed(2));
+        } catch (error) {
+          console.error("Error fetching monthly contribution:", error);
+          setError("Error fetching monthly contribution: " + error.message);
+        }
+      }
+    };
+    fetchMonthlyContribution();
+  }, [nhifContract]);
 
   const fetchMemberData = async () => {
     if (nhifContract && nationalId) {
@@ -27,15 +49,24 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
         });
 
         // Fetch and display the member's balance
-        const balanceInETH = await nhifContract.getAddressBalance(selectedAddress);
-        const balanceInKSH = parseFloat(ethers.utils.formatEther(balanceInETH)) * exchangeRate;
-        setBalance({ eth: ethers.utils.formatEther(balanceInETH), ksh: balanceInKSH });
+        const balanceInWei = await nhifContract.getAddressBalance(selectedAddress);
+        const balanceInETH = ethers.utils.formatEther(balanceInWei);
+        const balanceInKSH = parseFloat(balanceInETH) * ETH_TO_KSH_RATE;
+        setBalance({ 
+          eth: parseFloat(balanceInETH).toFixed(6), 
+          ksh: balanceInKSH.toFixed(2) 
+        });
 
         // Fetch total contributions
         const totalContributionsInWei = await nhifContract.getMemberTotalContributions(nationalId);
-        const totalContributionsInKSH = parseFloat(ethers.utils.formatEther(totalContributionsInWei)) * exchangeRate;
-        setTotalContributions({ eth: ethers.utils.formatEther(totalContributionsInWei), ksh: totalContributionsInKSH });
+        const totalContributionsInETH = ethers.utils.formatEther(totalContributionsInWei);
+        const totalContributionsInKSH = parseFloat(totalContributionsInETH) * ETH_TO_KSH_RATE;
+        setTotalContributions({ 
+          eth: parseFloat(totalContributionsInETH).toFixed(6), 
+          ksh: totalContributionsInKSH.toFixed(2) 
+        });
 
+        setError(null);
       } catch (error) {
         console.error("Error fetching member data:", error);
         setError("Error fetching member data: " + error.message);
@@ -55,25 +86,62 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
     event.preventDefault();
     if (nhifContract && nationalId) {
       try {
-        const contributionETH = (parseFloat(contributionKSH) / exchangeRate).toString();
+        const contributionETH = monthlyContributionETH;
         console.log("Making contribution...", nationalId, contributionETH, "ETH");
-        setTxBeingSent("Making contribution...");
 
+        setTxBeingSent("Making contribution...");
+        setTxStatus('Checking contribution amount...');
+
+        // First, try to estimate the gas to see if the transaction would revert
+        try {
+          await nhifContract.estimateGas.makeContribution(nationalId, {
+            value: ethers.utils.parseEther(contributionETH)
+          });
+        } catch (estimateError) {
+          if (estimateError.message.includes("Incorrect contribution amount")) {
+            throw new Error("The contribution amount is not accepted by the contract. Please check the required contribution amount.");
+          }
+          throw estimateError;
+        }
+
+        setTxStatus('Sending transaction...');
         const tx = await nhifContract.makeContribution(nationalId, {
-          value: ethers.utils.parseUnits(contributionETH, "ether"), // Convert contribution amount to wei
-          gasLimit: ethers.utils.hexlify(100000) // Set manual gas limit (adjust as necessary)
+          value: ethers.utils.parseEther(contributionETH),
+          gasLimit: 200000 // Set a manual gas limit as estimation might still fail
         });
 
         console.log("Transaction sent:", tx.hash);
-        await tx.wait();
-        console.log("Transaction confirmed");
-        setTxBeingSent(null);
-        alert("Contribution made successfully!");
+        setTxStatus('Transaction sent. Waiting for confirmation...');
+        
+        const receipt = await tx.wait();
+        console.log("Transaction confirmed", receipt);
+
+        if (receipt.status === 0) {
+          throw new Error("Transaction failed. Please check your balance and try again.");
+        }
+
+        setTxStatus('Contribution made successfully!');
         fetchMemberData(); // Refresh member data and balance
-        setContributionKSH('');
+        setError(null);
       } catch (error) {
         console.error("Error making contribution:", error);
-        setError("Error making contribution: " + (error.data ? error.data.message : error.message));
+        let errorMessage = "Error making contribution: ";
+
+        if (error.message.includes("Incorrect contribution amount")) {
+          errorMessage += "The contribution amount is not accepted by the contract. Please check the required contribution amount.";
+        } else if (error.code === 'INSUFFICIENT_FUNDS') {
+          errorMessage += "Insufficient funds for the transaction.";
+        } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
+          errorMessage += "Unable to estimate gas. The transaction may fail.";
+        } else if (error.message.includes("user rejected transaction")) {
+          errorMessage += "Transaction was rejected by the user.";
+        } else {
+          errorMessage += error.message || "Unknown error occurred.";
+        }
+
+        setError(errorMessage);
+        setTxStatus('');
+      } finally {
         setTxBeingSent(null);
       }
     }
@@ -81,13 +149,14 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
 
   return (
     <Slide direction="up">
-      <div className="mx-auto p-6 bg-white shadow-lg rounded-lg">
-        <h4 className="text-2xl font-bold mb-6 text-customBlue">Member Actions</h4>
-        <form onSubmit={handleFetchMember} className="mb-6">
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">National ID</label>
+      <div className="mx-auto p-8 bg-white shadow-lg rounded-lg">
+        <h4 className="text-3xl font-bold mb-8 text-customBlue text-center">Member Actions</h4>
+        <form onSubmit={handleFetchMember} className="mb-8">
+          <div className="mb-6">
+            <label className="block text-lg font-semibold text-gray-700 mb-2" htmlFor="nationalId">National ID</label>
             <input
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              id="nationalId"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
               type="text"
               value={nationalId}
               onChange={(e) => setNationalId(e.target.value)}
@@ -96,59 +165,76 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
             />
           </div>
           <div className="flex justify-center">
-            <input
-              className="w-60 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            <button
               type="submit"
-              value="Fetch Member Data"
-            />
+              className="w-full md:w-auto bg-blue-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+            >
+              Fetch Member Data
+            </button>
           </div>
         </form>
 
         {memberData && (
-          <div className="mb-6 p-4 bg-gray-100 rounded-md shadow-sm">
-            <h5 className="text-xl font-semibold mb-4 text-blue-700">Member Data</h5>
-            <div className="mb-2">
-              <p className="text-sm text-gray-700"><strong>Name:</strong> {memberData.name}</p>
-            </div>
-            <div className="mb-2">
-              <p className="text-sm text-gray-700"><strong>Last Contribution Date:</strong> {memberData.lastContributionDate}</p>
-            </div>
-            <div className="mb-2">
-              <p className="text-sm text-gray-700"><strong>Active:</strong> <span className={memberData.isActive ? "text-green-600" : "text-red-600"}>{memberData.isActive ? 'Yes' : 'No'}</span></p>
-            </div>
-            <div className="mb-2">
-              <p className="text-sm text-gray-700"><strong>Balance (ETH):</strong> {balance ? balance.eth : 'N/A'}</p>
-              <p className="text-sm text-gray-700"><strong>Balance (KES):</strong> {balance ? balance.ksh.toLocaleString() : 'N/A'}</p>
-            </div>
-            <div className="mb-2">
-              <p className="text-sm text-gray-700"><strong>Total Contributions (ETH):</strong> {totalContributions ? totalContributions.eth : 'N/A'}</p>
-              <p className="text-sm text-gray-700"><strong>Total Contributions (KES):</strong> {totalContributions ? totalContributions.ksh.toLocaleString() : 'N/A'}</p>
+          <div className="mb-8 p-6 bg-gray-100 rounded-lg shadow-sm">
+            <h5 className="text-2xl font-semibold mb-6 text-blue-700">Member Data</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="mb-4">
+                <p className="text-lg text-gray-700"><span className="font-semibold">Name:</span> {memberData.name}</p>
+              </div>
+              <div className="mb-4">
+                <p className="text-lg text-gray-700"><span className="font-semibold">Last Contribution:</span> {memberData.lastContributionDate}</p>
+              </div>
+              <div className="mb-4">
+                <p className="text-lg text-gray-700">
+                  <span className="font-semibold">Active:</span> 
+                  <span className={memberData.isActive ? "text-green-600 ml-2 font-semibold" : "text-red-600 ml-2 font-semibold"}>
+                    {memberData.isActive ? 'Yes' : 'No'}
+                  </span>
+                </p>
+              </div>
+              <div className="mb-4">
+                <p className="text-lg text-gray-700"><span className="font-semibold">Wallet Balance:</span> {balance ? `${balance.eth} ETH (${balance.ksh} KSH)` : 'N/A'}</p>
+              </div>
+              <div className="mb-4 col-span-2">
+                <p className="text-lg text-gray-700"><span className="font-semibold">Your Total NHIF Contributions:</span> {totalContributions ? `(${totalContributions.ksh} KSH)` : 'N/A'}</p>
+              </div>
+              <div className="flex items-center justify-between mb-4">
+
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold">Monthly Contribution To Pay</h3>
+          <TrendingUp className="h-6 w-6" />
+        </div>
+        <div className="space-y-2">
+          <p className="text-2xl font-semibold">{monthlyContributionKSH} KSH</p>
+          <p className="text-sm opacity-80">{monthlyContributionETH} ETH</p>
+        </div>
+        </div>
+    
             </div>
 
-            <h5 className="text-xl font-semibold mt-6 mb-4 text-blue-700">Make Contribution</h5>
+            <h5 className="text-2xl font-semibold mt-8 mb-6 text-blue-700">Pay Contribution</h5>
             <form onSubmit={handleMakeContribution}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Contribution Amount (KSH)</label>
-                <input
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  type="text"
-                  value={contributionKSH}
-                  onChange={(e) => setContributionKSH(e.target.value)}
-                  placeholder="Enter Contribution Amount in KSH (e.g., Ksh 500)"
-                  required
-                />
-              </div>
               <div className="flex justify-center">
-                <input
-                  className="w-60 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                <button
                   type="submit"
-                  value="Make Contribution"
-                />
+                  className="w-full md:w-auto bg-green-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+                >
+                  Pay Contribution
+                </button>
               </div>
             </form>
           </div>
         )}
-        {error && <p className="text-red-500 mt-4">{error}</p>}
+        
+        {txStatus && (
+          <div className="mt-4 p-4 bg-blue-100 text-blue-700 rounded-md">
+            {txStatus}
+          </div>
+        )}
+        
+        {error && (
+          <p className="text-red-600 mt-4 text-center text-lg">{error}</p>
+        )}
       </div>
     </Slide>
   );

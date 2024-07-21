@@ -28,7 +28,7 @@ export function CheckProvider({ nhifContract }) {
 
   const fetchProviderData = async (address) => {
     try {
-      const response = await axios.get(`https://bcf4d219-6438-45ba-97b4-971f839c9102-00-2thi2cnf7fchk.picard.replit.dev:5000/api/providers?address=${address}`);
+      const response = await axios.get(`https://nhifdevbackend.onrender.com/api/providers?address=${address}`);
       if (response.data && response.data.length > 0) {
         setProviderData(response.data[0]);
       } else {

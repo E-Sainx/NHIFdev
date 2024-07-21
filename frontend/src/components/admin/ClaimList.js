@@ -1,28 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
+import axios from 'axios';
 
 const ClaimList = ({ nhifContract }) => {
   const [claims, setClaims] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const pageSize = 10;
 
   useEffect(() => {
-    const fetchClaims = async () => {
-      if (nhifContract) {
-        try {
-          const claimCount = await nhifContract.getClaimsCount();
-          const claimList = [];
-          for (let i = 0; i < claimCount; i++) {
-            const claim = await nhifContract.claims(i);
-            claimList.push(claim);
-          }
-          setClaims(claimList);
-        } catch (error) {
-          console.error("Error fetching claims:", error);
-        }
-      }
-    };
-
     fetchClaims();
-  }, [nhifContract]);
+  }, [nhifContract, page]);
+
+  const fetchClaims = async () => {
+    if (nhifContract) {
+      try {
+        setLoading(true);
+        
+        // Fetch claims from blockchain
+        const claimCount = await nhifContract.getClaimsCount();
+        const startIndex = Math.max(0, claimCount - page * pageSize);
+        const endIndex = Math.max(0, claimCount - (page - 1) * pageSize);
+        const blockchainClaims = [];
+        
+        for (let i = startIndex; i < endIndex; i++) {
+          const claim = await nhifContract.claims(i);
+          blockchainClaims.push({
+            ...claim,
+            source: 'blockchain',
+            timestamp: Date.now() // Use current timestamp as we don't have it from blockchain
+          });
+        }
+
+        // Fetch claims from database
+        const response = await axios.get(`/api/claims?page=${page}&pageSize=${pageSize}`);
+        const dbClaims = response.data.claims.map(claim => ({ ...claim, source: 'database' }));
+
+        // Combine and sort claims
+        const allClaims = [...blockchainClaims, ...dbClaims]
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, pageSize);
+
+        setClaims(prevClaims => [...prevClaims, ...allClaims]);
+        setHasMore(allClaims.length === pageSize);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setError("Failed to fetch claims. Please try again.");
+        setLoading(false);
+      }
+    }
+  };
+
+  const loadMore = () => {
+    setPage(prevPage => prevPage + 1);
+  };
+
+  if (error) return <div className="text-red-500 text-center">{error}</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -35,9 +71,20 @@ const ClaimList = ({ nhifContract }) => {
             <p><strong>Amount:</strong> {ethers.utils.formatEther(claim.amount)} ETH</p>
             <p><strong>IPFS Hash:</strong> {claim.ipfsHash}</p>
             <p><strong>Status:</strong> {claim.status}</p>
+            <p><strong>Source:</strong> {claim.source}</p>
+            <p><strong>Timestamp:</strong> {new Date(claim.timestamp).toLocaleString()}</p>
           </div>
         ))}
       </div>
+      {loading && <div className="text-center mt-4">Loading...</div>}
+      {!loading && hasMore && (
+        <button 
+          onClick={loadMore} 
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200"
+        >
+          Load More
+        </button>
+      )}
     </div>
   );
 }

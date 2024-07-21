@@ -60,7 +60,7 @@ const ProviderRegistration = ({
 
         // Store data in MongoDB via backend API
         const response = await axios.post(
-          "https://bcf4d219-6438-45ba-97b4-971f839c9102-00-2thi2cnf7fchk.picard.replit.dev:5000/api/registerProvider",
+          "https://nhifdevbackend.onrender.com/api/registerProvider",
           {
             providerAddress,
             providerName,
@@ -107,7 +107,7 @@ const ProviderRegistration = ({
   const testAPI = async () => {
     try {
       const response = await axios.post(
-        "https://bcf4d219-6438-45ba-97b4-971f839c9102-00-2thi2cnf7fchk.picard.replit.dev:5000/api/registerProvider",
+        "https://nhifdevbackend.onrender.com/api/registerProvider",
         {
           providerAddress,
           providerName,
@@ -132,7 +132,7 @@ const ProviderRegistration = ({
         <form onSubmit={handleSubmit}>
           <div className="form-group mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Provider Ethereum Address
+             Hospital Ethereum Address
             </label>
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -152,7 +152,7 @@ const ProviderRegistration = ({
               type="text"
               value={providerName}
               onChange={(e) => setProviderName(e.target.value)}
-              placeholder="Enter Provider Name"
+              placeholder="Enter Hospital Name"
               required
             />
           </div>
@@ -178,7 +178,7 @@ const ProviderRegistration = ({
           </div>
           <div className="form-group mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Services
+              Type of Facility
             </label>
             <select
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -232,14 +232,7 @@ const ProviderRegistration = ({
             </button>
           </div>
         </form>
-        <div className="flex justify-center mt-4">
-          <button
-            onClick={testAPI}
-            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Test API
-          </button>
-        </div>
+    
       </div>
     </Slide>
   );

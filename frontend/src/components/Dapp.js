@@ -6,7 +6,7 @@ import { NoWalletDetected } from './NoWalletDetected';
 import { ConnectWallet } from './ConnectWallet';
 import { TransactionErrorMessage } from './TransactionErrorMessage';
 import { WaitingForTransactionMessage } from './WaitingForTransactionMessage';
-import { Members } from '../components/members/Members';
+import Members from '../components/members/Members';
 
 const HARDHAT_NETWORK_ID = '31337';
 const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
@@ -25,17 +25,20 @@ export function Dapp() {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         setProvider(provider);
 
-        const nhifContract = new ethers.Contract(
-          contractAddress.NHIF,
-          NHIF.abi,
-          provider.getSigner(0)
-        );
-        setNHIFContract(nhifContract);
+        const signer = provider.getSigner();
+        if (signer) {
+          const nhifContract = new ethers.Contract(
+            contractAddress.NHIF,
+            NHIF.abi,
+            signer
+          );
+          setNHIFContract(nhifContract);
 
-        try {
-          await connectWallet();
-        } catch (error) {
-          console.error('Failed to connect wallet:', error);
+          try {
+            await connectWallet();
+          } catch (error) {
+            console.error('Failed to connect wallet:', error);
+          }
         }
       }
     };
@@ -44,7 +47,16 @@ export function Dapp() {
 
     if (window.ethereum) {
       window.ethereum.on('accountsChanged', ([newAddress]) => {
-        setSelectedAddress(newAddress || null);
+        if (newAddress) {
+          setSelectedAddress(newAddress);
+        } else {
+          setSelectedAddress(null);
+          setNHIFContract(null);
+        }
+      });
+
+      window.ethereum.on('chainChanged', () => {
+        window.location.reload();
       });
     }
 
@@ -56,7 +68,11 @@ export function Dapp() {
       setSelectedAddress(selectedAddress);
       checkNetwork();
     } catch (error) {
-      console.error('Failed to connect wallet:', error);
+      if (error.code === ERROR_CODE_TX_REJECTED_BY_USER) {
+        console.error('User rejected the connection request');
+      } else {
+        console.error('Failed to connect wallet:', error);
+      }
     }
   };
 
@@ -72,6 +88,10 @@ export function Dapp() {
     setNetworkError(null);
   };
 
+  const dismissTransactionError = () => {
+    setTransactionError(null);
+  };
+
   if (window.ethereum === undefined) {
     return <NoWalletDetected />;
   }
@@ -84,15 +104,8 @@ export function Dapp() {
           networkError={networkError}
           dismiss={dismissNetworkError}
         />
-
-      
       ) : (
-       
         <>
-          
-
-          <hr />
-
           {txBeingSent && (
             <WaitingForTransactionMessage txHash={txBeingSent} />
           )}
@@ -100,7 +113,7 @@ export function Dapp() {
           {transactionError && (
             <TransactionErrorMessage
               message={transactionError.message}
-              dismiss={() => setTransactionError(null)}
+              dismiss={dismissTransactionError}
             />
           )}
 

@@ -5,7 +5,7 @@ import NHIF from '../contracts/Token.json';
 import { MemberRegistration } from './MemberRegistration';
 import { MemberActions } from './MemberActions';
 import MemberLanding from './MemberLanding';
-const contractAddress = '0x340b44838dE84736279678508d9A46d13d3379fe';
+const contractAddress = '0x2fCdf257E56e1d1BCC6CB3D46d28688291449389';
 
 export function Members({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nhifContract, setNHIFContract] = useState(null);
@@ -41,16 +41,17 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
               <p>Welcome <b>{selectedAddress}</b></p>
             </div>
             <ul className="flex space-x-4">
+            <li>
+                <Link to="/members/actions" className="hover:text-gray-200">
+                  Home
+                </Link>
+              </li>
               <li>
                 <Link to="/members/register" className="hover:text-gray-200">
-                  Register Member
+                  Register
                 </Link>
               </li>
-              <li>
-                <Link to="/members/actions" className="hover:text-gray-200">
-                  Member Actions
-                </Link>
-              </li>
+              
             </ul>
           </div>
         </nav>
