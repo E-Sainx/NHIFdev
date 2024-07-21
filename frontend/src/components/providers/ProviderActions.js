@@ -3,6 +3,8 @@ import { ethers } from 'ethers';
 import { create } from 'ipfs-http-client';
 import { Slide } from 'react-awesome-reveal';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // IPFS client setup
 const ipfsClient = create({
@@ -46,13 +48,15 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
     try {
       const registered = await checkProviderRegistration(selectedAddress);
       if (!registered) {
-        alert('Provider is not registered.');
+        toast.error('Provider is not registered.');
         return;
       }
 
       const amountInETH = (parseFloat(amountInKES) * exchangeRate).toString();
       console.log(`Submitting claim for National ID: ${nationalId}, Amount: ${amountInETH} ETH, IPFS Hash: ${ipfsHash}`);
       
+      setTxBeingSent('Submitting claim to blockchain...');
+
       // Submit claim to blockchain
       const tx = await nhifContract.submitClaim(
         nationalId,
@@ -60,46 +64,62 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
         ipfsHash,
         { gasLimit: 300000 }
       );
-      setTxBeingSent(tx.hash);
       console.log(`Transaction sent: ${tx.hash}`);
       await tx.wait();
       console.log(`Transaction confirmed: ${tx.hash}`);
 
-      // Store claim in database
-      await axios.post('/api/claims', {
+      setTxBeingSent('Storing claim in database...');
+
+      // Store claim in MongoDB via backend API
+      const response = await axios.post('https://nhifdevbackend.onrender.com/api/submitClaim', {
         nationalId,
         provider: selectedAddress,
         amount: parseFloat(amountInKES),
         ipfsHash,
-        status: 'Submitted'
+        status: 'Submitted',
+        transactionHash: tx.hash
       });
 
-      alert('Claim submitted successfully to blockchain and database');
+      if (response.status === 200) {
+        toast.success('Claim submitted successfully to blockchain and database');
+        setNationalId('');
+        setAmountInKES('0');
+        setIpfsHash('');
+      } else {
+        throw new Error('Failed to store claim in database');
+      }
     } catch (error) {
       console.error('Error submitting claim:', error);
       setTransactionError(error.message);
+      toast.error(`Error submitting claim: ${error.message}`);
     } finally {
       setTxBeingSent(null);
     }
   };
 
-
-
   const removeProvider = async () => {
     try {
       console.log(`Removing provider: ${providerAddress}`);
+      setTxBeingSent('Removing provider from blockchain...');
+
       const tx = await nhifContract.removeProvider(providerAddress, { gasLimit: 300000 });
-      setTxBeingSent(tx.hash);
       await tx.wait();
       
-      // Remove provider from database
-      await axios.delete(`/api/providers/${providerAddress}`);
+      setTxBeingSent('Removing provider from database...');
 
-      console.log(`Provider removed: ${providerAddress}`);
-      alert('Provider removed successfully from blockchain and database');
+      // Remove provider from database
+      const response = await axios.delete(`https://nhifdevbackend.onrender.com/api/providers/${providerAddress}`);
+
+      if (response.status === 200) {
+        toast.success('Provider removed successfully from blockchain and database');
+        setProviderAddress('');
+      } else {
+        throw new Error('Failed to remove provider from database');
+      }
     } catch (error) {
       console.error('Error removing provider:', error);
       setTransactionError(error.message);
+      toast.error(`Error removing provider: ${error.message}`);
     } finally {
       setTxBeingSent(null);
     }
@@ -113,6 +133,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
     } catch (error) {
       console.error('Error uploading file to IPFS:', error);
       setTransactionError('Error uploading file to IPFS.');
+      toast.error('Error uploading file to IPFS.');
     }
   };
 
@@ -129,30 +150,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
       <div className="mx-auto p-4 bg-white shadow-md rounded-md">
         <h2 className="text-2xl font-bold mb-4 text-customBlue">Hospital Actions</h2>
 
-
-        {/* Remove Provider */}
-        <div className="mb-4">
-          <h3 className="text-xl font-semibold mb-2">Remove Hospital Account</h3>
-          <div className="form-group mb-2">
-            <label className="block text-sm font-medium text-gray-700">Hospital Address</label>
-            <input
-              className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              type="text"
-              value={providerAddress}
-              onChange={(e) => setProviderAddress(e.target.value)}
-              placeholder="Enter Provider Address"
-            />
-          </div>
-          <div className="form-group flex justify-center">
-            <button
-              className="btn bg-customBlue w-60 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-              onClick={removeProvider}
-              disabled={txBeingSent}
-            >
-              Remove Hospital
-            </button>
-          </div>
-        </div>
+        
 
         {/* Submit Claim */}
         <div className="mb-4">
@@ -206,8 +204,33 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
           </div>
         </div>
 
-        {transactionError && <p className="error">{transactionError}</p>}
-        {txBeingSent && <p>Transaction sent: {txBeingSent}</p>}
+
+        {/* Remove Provider */}
+        <div className="mb-4">
+          <h3 className="text-xl font-semibold mb-2">Remove Hospital Account</h3>
+          <div className="form-group mb-2">
+            <label className="block text-sm font-medium text-gray-700">Hospital Address</label>
+            <input
+              className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              type="text"
+              value={providerAddress}
+              onChange={(e) => setProviderAddress(e.target.value)}
+              placeholder="Enter Provider Address"
+            />
+          </div>
+          <div className="form-group flex justify-center">
+            <button
+              className="btn bg-customBlue w-60 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              onClick={removeProvider}
+              disabled={txBeingSent}
+            >
+              Remove Hospital
+            </button>
+          </div>
+        </div>
+
+        {transactionError && <p className="error text-red-500">{transactionError}</p>}
+        {txBeingSent && <p className="text-blue-500">{txBeingSent}</p>}
       </div>
     </Slide>
   );
