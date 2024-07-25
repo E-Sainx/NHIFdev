@@ -3,22 +3,29 @@ import { Slide, Fade } from 'react-awesome-reveal';
 
 export function ProcessClaim({ nhifContract, setTransactionError, setTxBeingSent }) {
   const [claimId, setClaimId] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (nhifContract) {
-      try {
-        setTxBeingSent("Processing claim...");
-        const tx = await nhifContract.processClaim(claimId);
-        await tx.wait();
-        alert("Claim processed successfully!");
-        setClaimId('');
-      } catch (error) {
-        setTransactionError("Error processing claim: " + error.message);
-        setTxBeingSent(null);
-      }
-    } else {
+    if (!nhifContract) {
       setTransactionError("Contract not initialized");
+      return;
+    }
+
+    setIsLoading(true);
+    setTransactionError(null);
+
+    try {
+      setTxBeingSent("Processing claim...");
+      const tx = await nhifContract.processClaim(claimId);
+      await tx.wait();
+      alert("Claim processed successfully!");
+      setClaimId('');
+    } catch (error) {
+      setTransactionError("Error processing claim: " + error.message);
+    } finally {
+      setTxBeingSent(null);
+      setIsLoading(false);
     }
   };
 
@@ -39,13 +46,16 @@ export function ProcessClaim({ nhifContract, setTransactionError, setTxBeingSent
             />
           </div>
           <div className="form-group">
-            <input
-              className="btn bg-customBlue w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            <button
               type="submit"
-              value="Process Claim"
-            />
+              className="btn bg-customBlue w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Processing...' : 'Process Claim'}
+            </button>
           </div>
         </form>
+        {isLoading && <p className="text-center text-blue-500 mt-4">Please wait while your claim is being processed...</p>}
       </div>
     </Slide>
   );

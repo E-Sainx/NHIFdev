@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import NHIF from '../contracts/Token.json';
 import { MemberRegistration } from './MemberRegistration';
 import { MemberActions } from './MemberActions';
 import MemberLanding from './MemberLanding';
+
 const contractAddress = '0x2fCdf257E56e1d1BCC6CB3D46d28688291449389';
 
 export function Members({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
@@ -41,7 +42,7 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
               <p>Welcome <b>{selectedAddress}</b></p>
             </div>
             <ul className="flex space-x-4">
-            <li>
+              <li>
                 <Link to="/members/actions" className="hover:text-gray-200">
                   Home
                 </Link>
@@ -51,20 +52,18 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
                   Register
                 </Link>
               </li>
-              
             </ul>
           </div>
         </nav>
 
         <div className="flex-grow container mx-auto p-4">
-        
-
           <Routes>
+            <Route path="/" element={<Navigate to="/members/landing" />} />
             <Route
-              path="/"
+              path="/members/landing"
               element={
                 <MemberLanding
-                nhifContract={nhifContract}
+                  nhifContract={nhifContract}
                   selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
@@ -75,7 +74,7 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
               path="/members/register"
               element={
                 <MemberRegistration
-                nhifContract={nhifContract}
+                  nhifContract={nhifContract}
                   selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
@@ -99,4 +98,5 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
     </Router>
   );
 }
+
 export default Members;

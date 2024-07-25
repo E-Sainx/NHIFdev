@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import { Slide, Fade } from 'react-awesome-reveal';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import NHIF from '../contracts/Token.json';
 import ProviderRegistration from './ProviderRegistragion'; // Corrected import
 import ProviderActions from './ProviderActions'; // Corrected import
 import ProviderLanding from './ProviderLanding';
-import WithdrawClaim from './WithdrawClaim'
+import WithdrawClaim from './WithdrawClaim';
 
 const contractAddress = '0x2fCdf257E56e1d1BCC6CB3D46d28688291449389'; // Replace with your contract address
 
@@ -62,15 +61,13 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
         </nav>
 
         <div className="flex-grow container mx-auto p-4">
-          {/* Additional Information and Animations */}
-          
-
           <Routes>
-          <Route
+            <Route path="/" element={<Navigate to="/provider/landing" />} />
+            <Route
               path="/provider/landing"
               element={
                 <ProviderLanding
-                nhifContract={nhifContract}
+                  nhifContract={nhifContract}
                   selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
@@ -81,7 +78,7 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
               path="/providers/register"
               element={
                 <ProviderRegistration
-                nhifContract={nhifContract}
+                  nhifContract={nhifContract}
                   selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
@@ -92,7 +89,7 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
               path="/providers/actions"
               element={
                 <ProviderActions
-                nhifContract={nhifContract}
+                  nhifContract={nhifContract}
                   selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
@@ -103,7 +100,7 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
               path="/providers/withdraw"
               element={
                 <WithdrawClaim
-                nhifContract={nhifContract}
+                  nhifContract={nhifContract}
                   selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
@@ -116,4 +113,5 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
     </Router>
   );
 }
+
 export default Providers;

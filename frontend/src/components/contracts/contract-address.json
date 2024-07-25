@@ -1,5 +1,7 @@
 {
   "_format": "hh-sol-dbg-1",
   "buildInfo": "../../build-info/bc5f5794210cf127da65a721f2ad0eb2.json",
-  "contractAddress": "0x2fCdf257E56e1d1BCC6CB3D46d28688291449389"
+  "contractAddress": "0x2fCdf257E56e1d1BCC6CB3D46d28688291449389",
+  "NHIF": "0x2fCdf257E56e1d1BCC6CB3D46d28688291449389"
+
 }

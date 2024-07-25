@@ -67,23 +67,34 @@ export function MemberStatus({ nhifContract }) {
           </div>
         </form>
         {memberData && (
-          <div className="mb-6 p-4 bg-gray-100 rounded-md shadow-sm">
-            <h5 className="text-xl font-semibold mb-4 text-blue-700">Member Data</h5>
-            <div className="mb-2">
-              <p className="text-sm text-gray-700"><strong>Name:</strong> {memberData.name}</p>
-            </div>
-            <div className="mb-2">
-              <p className="text-sm text-gray-700"><strong>Last Contribution Date:</strong> {memberData.lastContributionDate}</p>
-            </div>
-            <div className="mb-2">
-              <p className="text-sm text-gray-700"><strong>Total Contributions (ETH):</strong> {totalContributions ? totalContributions.eth : 'N/A'}</p>
-              <p className="text-sm text-gray-700"><strong>Total Contributions (KES):</strong> {totalContributions ? totalContributions.kes : 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-700"><strong>Active:</strong> <span className={memberData.isActive ? "text-green-600" : "text-red-600"}>{memberData.isActive ? 'Yes' : 'No'}</span></p>
-            </div>
-          </div>
-        )}
+  <div className="mb-6 p-6 bg-white rounded-lg shadow-lg border border-gray-200">
+    <h5 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">Member Data</h5>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+        <span className="text-gray-600">Name</span>
+        <span className="font-semibold text-gray-800">{memberData.name}</span>
+      </div>
+      <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+        <span className="text-gray-600">Last Contribution</span>
+        <span className="font-semibold text-gray-800">{memberData.lastContributionDate}</span>
+      </div>
+      <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+        <span className="text-gray-600">Total Contributions (ETH)</span>
+        <span className="font-semibold text-gray-800">{totalContributions ? totalContributions.eth : 'N/A'}</span>
+      </div>
+      <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+        <span className="text-gray-600">Total Contributions (KES)</span>
+        <span className="font-semibold text-gray-800">{totalContributions ? totalContributions.kes : 'N/A'}</span>
+      </div>
+      <div className="flex justify-between items-center">
+        <span className="text-gray-600">Status</span>
+        <span className={`font-semibold px-3 py-1 rounded-full text-white ${memberData.isActive ? "bg-green-500" : "bg-red-500"}`}>
+          {memberData.isActive ? 'Active' : 'Inactive'}
+        </span>
+      </div>
+    </div>
+  </div>
+)}
         {transactionError && <p className="text-red-500 mt-4">{transactionError}</p>}
       </div>
     </Slide>
