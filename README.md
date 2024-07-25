@@ -130,3 +130,30 @@ This project is licensed under the MIT License.
 
 # NHIFdev
 # NHIFdev
+
+Blockchain
+-Wallet  : Metamask
+-Ethereum node provider -Alchemy
+-MEdical documents storage- IPFS
+-Blockchain IDE -Hardhat
+-Testnet- Sepolia
+-solidity
+
+
+
+Frontend
+-React
+-Tailwindcss
+
+
+
+
+
+Backend
+
+MongoDb
+Express JS
+Node  v18
+Deployed -Render.
+
+
