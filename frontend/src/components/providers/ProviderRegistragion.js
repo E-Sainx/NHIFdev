@@ -18,9 +18,9 @@ const counties = [
 const ProviderRegistration = ({
   nhifContract,
   setTransactionError,
-  setTxBeingSent
+  setTxBeingSent,
+  selectedAddress
 }) => {
-  const [providerAddress, setProviderAddress] = useState("");
   const [providerName, setProviderName] = useState("");
   const [location, setLocation] = useState("");
   const [services, setServices] = useState("");
@@ -31,12 +31,7 @@ const ProviderRegistration = ({
     event.preventDefault();
     if (nhifContract) {
       try {
-        // Validate Ethereum address format
-        if (!/^0x[a-fA-F0-9]{40}$/.test(providerAddress)) {
-          throw new Error("Invalid Ethereum address");
-        }
-
-        console.log("Registering provider...", providerAddress, providerName);
+        console.log("Registering provider...", selectedAddress, providerName);
         setTxBeingSent("Registering provider...");
 
         // Estimate gas for the transaction
@@ -62,7 +57,7 @@ const ProviderRegistration = ({
         const response = await axios.post(
           "https://nhifdevbackend.onrender.com/api/registerProvider",
           {
-            providerAddress,
+            providerAddress: selectedAddress,
             providerName,
             location,
             services,
@@ -73,7 +68,6 @@ const ProviderRegistration = ({
 
         if (response.status === 200) {
           toast.success("Provider registered successfully!");
-          setProviderAddress("");
           setProviderName("");
           setLocation("");
           setServices("");
@@ -109,7 +103,7 @@ const ProviderRegistration = ({
       const response = await axios.post(
         "https://nhifdevbackend.onrender.com/api/registerProvider",
         {
-          providerAddress,
+          providerAddress: selectedAddress,
           providerName,
           location,
           services,
@@ -137,10 +131,8 @@ const ProviderRegistration = ({
             <input
               className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
-              value={providerAddress}
-              onChange={(e) => setProviderAddress(e.target.value)}
-              placeholder="Enter Provider Ethereum Address"
-              required
+              value={selectedAddress}
+              readOnly
             />
           </div>
           <div className="form-group mb-4">

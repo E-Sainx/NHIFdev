@@ -7,11 +7,11 @@ const Header = ({ address, network, balance, onNavigate }) => {
                 <h1 className="text-2xl font-bold">Blockchain Health Insurance</h1>
             </div>
             <div className="flex items-center space-x-4">
-                {address && (
+                {/* {address && (
                     <div className="text-sm">
                         <p>Address: {address}</p>
                     </div>
-                )}
+                )} */}
                 <button
                     className="bg-blue-500 text-white px-4 py-2 rounded"
                     onClick={() => onNavigate('members')}

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
-import axios from 'axios';
 
 const ClaimList = ({ nhifContract }) => {
   const [claims, setClaims] = useState([]);
@@ -9,6 +8,7 @@ const ClaimList = ({ nhifContract }) => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const pageSize = 10;
+  const exchangeRate = 300000; // Example exchange rate: 1 ETH = 300,000 KES
 
   useEffect(() => {
     fetchClaims();
@@ -18,33 +18,33 @@ const ClaimList = ({ nhifContract }) => {
     if (nhifContract) {
       try {
         setLoading(true);
-        
-        // Fetch claims from blockchain
+
         const claimCount = await nhifContract.getClaimsCount();
         const startIndex = Math.max(0, claimCount - page * pageSize);
         const endIndex = Math.max(0, claimCount - (page - 1) * pageSize);
         const blockchainClaims = [];
-        
+
         for (let i = startIndex; i < endIndex; i++) {
           const claim = await nhifContract.claims(i);
           blockchainClaims.push({
-            ...claim,
-            source: 'blockchain',
+            claimId: i,
+            nationalId: claim.nationalId.toString(),
+            provider: claim.provider,
+            amount: ethers.utils.formatEther(claim.amount),
+            ipfsHash: claim.ipfsHash,
+            status: claim.status,
+            serviceType: claim.serviceType,
             timestamp: Date.now() // Use current timestamp as we don't have it from blockchain
           });
         }
 
-        // Fetch claims from database
-        const response = await axios.get(`/api/claims?page=${page}&pageSize=${pageSize}`);
-        const dbClaims = response.data.claims.map(claim => ({ ...claim, source: 'database' }));
+        // Remove duplicates
+        const newClaims = blockchainClaims.filter(
+          newClaim => !claims.some(existingClaim => existingClaim.claimId === newClaim.claimId)
+        );
 
-        // Combine and sort claims
-        const allClaims = [...blockchainClaims, ...dbClaims]
-          .sort((a, b) => b.timestamp - a.timestamp)
-          .slice(0, pageSize);
-
-        setClaims(prevClaims => [...prevClaims, ...allClaims]);
-        setHasMore(allClaims.length === pageSize);
+        setClaims(prevClaims => [...prevClaims, ...newClaims]);
+        setHasMore(endIndex > 0);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching claims:", error);
@@ -58,35 +58,89 @@ const ClaimList = ({ nhifContract }) => {
     setPage(prevPage => prevPage + 1);
   };
 
+  const statusToString = (status) => {
+    switch (status) {
+      case 0:
+        return 'Submitted';
+      case 1:
+        return 'Under Review';
+      case 2:
+        return 'Approved';
+      case 3:
+        return 'Rejected';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 0:
+        return 'text-gray-500';
+      case 1:
+        return 'text-yellow-500';
+      case 2:
+        return 'text-green-500';
+      case 3:
+        return 'text-red-500';
+      default:
+        return 'text-gray-500';
+    }
+  };
+
+  const formatAmountInKes = (amountInEth) => {
+    const amountInKes = parseFloat(amountInEth) * exchangeRate;
+    return amountInKes.toFixed(2);
+  };
+
   if (error) return <div className="text-red-500 text-center">{error}</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h2 className="text-2xl font-bold text-center text-blue-900 mb-4">Claim List</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {claims.map((claim, index) => (
-          <div key={index} className="bg-white shadow-md rounded-lg p-6">
-            <p><strong>National ID:</strong> {claim.nationalId}</p>
-            <p><strong>Provider:</strong> {claim.provider}</p>
-            <p><strong>Amount:</strong> {ethers.utils.formatEther(claim.amount)} ETH</p>
-            <p><strong>IPFS Hash:</strong> {claim.ipfsHash}</p>
-            <p><strong>Status:</strong> {claim.status}</p>
-            <p><strong>Source:</strong> {claim.source}</p>
-            <p><strong>Timestamp:</strong> {new Date(claim.timestamp).toLocaleString()}</p>
-          </div>
-        ))}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr>
+              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">Claim ID</th>
+              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">Member ID</th>
+              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">Provider</th>
+              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">Amount (KES)</th>
+              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">IPFS Hash</th>
+              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">Status</th>
+              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">Service Type</th>
+              <th className="py-2 px-4 border-b border-gray-200 bg-gray-100">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {claims.map((claim, index) => (
+              <tr key={index}>
+                <td className="py-2 px-4 border-b border-gray-200">{claim.claimId}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{claim.nationalId}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{claim.provider}</td>
+                <td className="py-2 px-4 border-b border-gray-200 text-green-600">{formatAmountInKes(claim.amount)}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{claim.ipfsHash}</td>
+                <td className={`py-2 px-4 border-b border-gray-200 ${getStatusColor(claim.status)}`}>{statusToString(claim.status)}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{claim.serviceType}</td>
+                <td className="py-2 px-4 border-b border-gray-200">{new Date(claim.timestamp).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
       {loading && <div className="text-center mt-4">Loading...</div>}
       {!loading && hasMore && (
-        <button 
-          onClick={loadMore} 
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200"
-        >
-          Load More
-        </button>
+        <div className="text-center mt-4">
+          <button 
+            onClick={loadMore} 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200"
+          >
+            Load More
+          </button>
+        </div>
       )}
     </div>
   );
-}
+};
 
 export default ClaimList;

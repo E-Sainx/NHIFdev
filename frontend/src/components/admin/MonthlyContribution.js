@@ -19,8 +19,7 @@ export function MonthlyContribution({ nhifContract, setTransactionError, setTxBe
         console.log("Setting monthly contribution...", contributionETH, "ETH");
         setTxBeingSent("Setting monthly contribution...");
 
-        const gasLimit = ethers.utils.hexlify(300000); // Increased gas limit
-        const tx = await nhifContract.setMonthlyContribution(ethers.utils.parseEther(contributionETH), { gasLimit });
+        const tx = await nhifContract.setMonthlyContribution(ethers.utils.parseEther(contributionETH), { gasLimit: 300000 });
 
         console.log("Transaction sent:", tx.hash);
         await tx.wait();

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Slide } from 'react-awesome-reveal';
 import { ethers } from 'ethers';
 
-const WithdrawClaim = ({ nhifContract, setTransactionError, setTxBeingSent }) => {
-  const [providerAddress, setProviderAddress] = useState('');
+const WithdrawClaim = ({ nhifContract, selectedAddress, setTransactionError, setTxBeingSent }) => {
+  const [providerAddress, setProviderAddress] = useState(selectedAddress);
   const [providerBalance, setProviderBalance] = useState('0');
+  const exchangeRate = 300000; // Example exchange rate: 1 ETH = 300,000 KES
 
   useEffect(() => {
     if (nhifContract && providerAddress) {
@@ -51,6 +52,11 @@ const WithdrawClaim = ({ nhifContract, setTransactionError, setTxBeingSent }) =>
     }
   };
 
+  const formatAmountInKes = (amountInEth) => {
+    const amountInKes = parseFloat(amountInEth) * exchangeRate;
+    return amountInKes.toFixed(2);
+  };
+
   return (
     <Slide direction="up">
       <div className="mx-auto p-4 bg-white shadow-md rounded-md">
@@ -77,8 +83,8 @@ const WithdrawClaim = ({ nhifContract, setTransactionError, setTxBeingSent }) =>
           </button>
         </div>
         <div className="mb-4">
-          <h5 className="text-lg font-semibold text-gray-800">Provider Balance:</h5>
-          <p className="text-xl font-bold text-gray-900">{providerBalance} ETH</p>
+          <h5 className="text-lg font-semibold text-gray-800"> Healthcare Provider Balance:</h5>
+          <p className="text-xl font-bold text-green-600">{formatAmountInKes(providerBalance)} KES</p>
         </div>
         <div className="form-group flex justify-center">
           <button

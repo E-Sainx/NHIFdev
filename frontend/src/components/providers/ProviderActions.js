@@ -25,8 +25,9 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
   const [transactionError, setTransactionError] = useState(null);
   const [txBeingSent, setTxBeingSent] = useState(null);
   const [isProviderRegistered, setIsProviderRegistered] = useState(false);
+  const [serviceType, setServiceType] = useState('Inpatient');
 
-  const exchangeRate = 0.000003; // Hardcoded conversion rate: 1 KES = 0.000003 ETH
+  const exchangeRate = 0.000003;
 
   useEffect(() => {
     checkProviderRegistration(selectedAddress);
@@ -54,14 +55,14 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
 
       const amountInETH = (parseFloat(amountInKES) * exchangeRate).toString();
       console.log(`Submitting claim for National ID: ${nationalId}, Amount: ${amountInETH} ETH, IPFS Hash: ${ipfsHash}`);
-      
+
       setTxBeingSent('Submitting claim to blockchain...');
 
-      // Submit claim to blockchain
       const tx = await nhifContract.submitClaim(
         nationalId,
         ethers.utils.parseEther(amountInETH),
         ipfsHash,
+        serviceType,
         { gasLimit: 300000 }
       );
       console.log(`Transaction sent: ${tx.hash}`);
@@ -70,12 +71,12 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
 
       setTxBeingSent('Storing claim in database...');
 
-      // Store claim in MongoDB via backend API
       const response = await axios.post('https://nhifdevbackend.onrender.com/api/submitClaim', {
         nationalId,
         provider: selectedAddress,
         amount: parseFloat(amountInKES),
         ipfsHash,
+        serviceType,
         status: 'Submitted',
         transactionHash: tx.hash
       });
@@ -104,10 +105,9 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
 
       const tx = await nhifContract.removeProvider(providerAddress, { gasLimit: 300000 });
       await tx.wait();
-      
+
       setTxBeingSent('Removing provider from database...');
 
-      // Remove provider from database
       const response = await axios.delete(`https://nhifdevbackend.onrender.com/api/providers/${providerAddress}`);
 
       if (response.status === 200) {
@@ -144,48 +144,58 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
     }
   };
 
-  // The JSX return statement remains unchanged
   return (
     <Slide direction="up">
-      <div className="mx-auto p-4 bg-white shadow-md rounded-md">
-        <h2 className="text-2xl font-bold mb-4 text-customBlue">Hospital Actions</h2>
-
-        
+      <div className="container mx-auto p-6 bg-white shadow-lg rounded-md">
+        <h2 className="text-3xl font-bold mb-6 text-blue-600">Hospital Actions</h2>
 
         {/* Submit Claim */}
-        <div className="mb-4">
-          <h3 className="text-xl font-semibold mb-2">Submit Claim</h3>
-          <div className="form-group mb-2">
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold mb-4">Submit Claim</h3>
+          <div className="form-group mb-4">
             <label className="block text-sm font-medium text-gray-700">National ID</label>
             <input
-              className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="form-control mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
               value={nationalId}
               onChange={(e) => setNationalId(e.target.value)}
               placeholder="Enter National ID"
             />
           </div>
-          <div className="form-group mb-2">
+          <div className="form-group mb-4">
             <label className="block text-sm font-medium text-gray-700">Amount (KES)</label>
             <input
-              className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="form-control mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
               value={amountInKES}
               onChange={(e) => setAmountInKES(e.target.value)}
               placeholder="Enter Amount in KES"
             />
           </div>
-          <div className="form-group mb-2">
+          <div className="form-group mb-4">
+            <label className="block text-sm font-medium text-gray-700">Service Type</label>
+            <select
+              className="form-control mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              value={serviceType}
+              onChange={(e) => setServiceType(e.target.value)}
+            >
+              <option value="Inpatient">Inpatient</option>
+              <option value="Outpatients">Outpatients</option>
+              <option value="Edu Afya">Edu Afya</option>
+              <option value="Linda Mama">Linda Mama</option>
+            </select>
+          </div>
+          <div className="form-group mb-4">
             <label className="block text-sm font-medium text-gray-700">IPFS Hash</label>
             <input
-              className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="form-control mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
               value={ipfsHash}
               readOnly
               placeholder="IPFS Hash will appear here"
             />
           </div>
-          <div className="form-group mb-2">
+          <div className="form-group mb-4">
             <label className="block text-sm font-medium text-gray-700">Upload Medical File (Optional)</label>
             <input
               className="form-control mt-1 block w-full text-sm text-gray-500 border border-gray-300 rounded-md cursor-pointer"
@@ -195,7 +205,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
           </div>
           <div className="form-group flex justify-center">
             <button
-              className="btn bg-customBlue w-60 bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              className="btn bg-green-500 w-60 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
               onClick={submitClaim}
               disabled={txBeingSent}
             >
@@ -204,14 +214,13 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
           </div>
         </div>
 
-
         {/* Remove Provider */}
-        <div className="mb-4">
-          <h3 className="text-xl font-semibold mb-2">Remove Hospital Account</h3>
-          <div className="form-group mb-2">
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold mb-4">Remove Hospital Account</h3>
+          <div className="form-group mb-4">
             <label className="block text-sm font-medium text-gray-700">Hospital Address</label>
             <input
-              className="form-control mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="form-control mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               type="text"
               value={providerAddress}
               onChange={(e) => setProviderAddress(e.target.value)}
@@ -220,7 +229,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
           </div>
           <div className="form-group flex justify-center">
             <button
-              className="btn bg-customBlue w-60 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              className="btn bg-red-500 w-60 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
               onClick={removeProvider}
               disabled={txBeingSent}
             >
@@ -229,7 +238,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
           </div>
         </div>
 
-        {transactionError && <p className="error text-red-500">{transactionError}</p>}
+        {transactionError && <p className="text-red-500">{transactionError}</p>}
         {txBeingSent && <p className="text-blue-500">{txBeingSent}</p>}
       </div>
     </Slide>

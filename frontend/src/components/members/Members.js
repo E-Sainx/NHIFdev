@@ -6,7 +6,7 @@ import { MemberRegistration } from './MemberRegistration';
 import { MemberActions } from './MemberActions';
 import MemberLanding from './MemberLanding';
 
-const contractAddress = '0x2fCdf257E56e1d1BCC6CB3D46d28688291449389';
+const contractAddress = '0x1E4515B38FDE9660b012214E113FdADBdEaE22f4';
 
 export function Members({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nhifContract, setNHIFContract] = useState(null);
