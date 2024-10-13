@@ -1,19 +1,19 @@
-# Blockchain Health Insurance
+# Blockchain  Social Health Authority
 
 This project demonstrates a blockchain-based health insurance system using Hardhat, Solidity, React, and MetaMask. It aims to provide a decentralized solution for managing health insurance, including member registration, provider registration, claim submission, and claim approval.
 
 ## Project Overview
 
-The Blockchain Health Insurance system includes the following components:
+The Blockchain Social Health Authority system includes the following components:
 - **Smart Contracts**: Written in Solidity and deployed using Hardhat.
 - **Frontend**: Built with React, styled using Tailwind CSS, and integrated with MetaMask for blockchain interactions.
 - **MetaMask Integration**: Enables users to connect their MetaMask wallet for authentication and transactions on the blockchain.
 
 ## Features
 
-- **Member Registration**: Allows users to register as NHIF members.
+- **Member Registration**: Allows users to register as SHA members.
 - **Provider Registration**: Allows healthcare providers to register with the system.
-- **Member Login**: Enables NHIF members to log in.
+- **Member Login**: Enables SHA members to log in.
 - **Provider Login**: Enables healthcare providers to log in.
 - **Claim Submission**: Allows members to submit health insurance claims.
 - **Claim Approval**: Enables providers to approve submitted claims.
@@ -31,7 +31,7 @@ Follow these steps to set up and run the project on your local machine.
 
 1. **Clone the Repository**:
    ```sh
-   git clone https://github.com/E-Sainx/NHIFdev.git
+   git clone https://github.com/E-Sainx/SHAdev.git
    cd blockchain-health-insurance
    ```
 
@@ -128,8 +128,8 @@ Contributions are welcome! Please fork the repository and create a pull request 
 
 This project is licensed under the MIT License.
 
-# NHIFdev
-# NHIFdev
+# SHAdev
+# SHAdev
 
 Blockchain
 -Wallet  : Metamask

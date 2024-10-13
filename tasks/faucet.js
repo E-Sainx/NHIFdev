@@ -42,5 +42,5 @@ task("faucet", "Sends ETH and NHIF tokens to an address")
     });
     await tx2.wait();
 
-    console.log(`Transferred 1 ETH and 100 NHIF tokens to ${receiver}`);
+    console.log(`Transferred 1 ETH and 100 SHA tokens to ${receiver}`);
   });

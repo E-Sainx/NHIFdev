@@ -19,7 +19,7 @@ import WithdrawFunds from '../WithdrawFunds';
 import CheckProvider from '../CheckProvider';
 import ClaimList from './ClaimList';
 
-const contractAddress = '0x1E4515B38FDE9660b012214E113FdADBdEaE22f4';
+const contractAddress = '0xF3f490dB968d24c63efD3b1d3E23f8eDD03159F0';
 
 export function Admin({ provider, selectedAddress }) {
   const [nhifContract, setNHIFContract] = useState(null);
@@ -64,10 +64,10 @@ export function Admin({ provider, selectedAddress }) {
         <nav className="bg-customBlue text-white py-4 shadow-md">
           <div className="container mx-auto flex justify-between items-center">
             <Link to="/" className="text-2xl font-bold">
-              NHIF Admin Dashboard
+              SHA Admin Dashboard
             </Link>
             <div>
-              <h1 className="text-xl font-bold">NHIF Management System</h1>
+              <h1 className="text-xl font-bold">SHA Management System</h1>
               <p>Welcome <b>{selectedAddress}</b></p>
             </div>
             <ul className="flex space-x-4">

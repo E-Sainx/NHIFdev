@@ -7,7 +7,7 @@ import ProviderActions from './ProviderActions'; // Corrected import
 import ProviderLanding from './ProviderLanding';
 import WithdrawClaim from './WithdrawClaim';
 
-const contractAddress = '0x1E4515B38FDE9660b012214E113FdADBdEaE22f4'; // Replace with your contract address
+const contractAddress = '0xF3f490dB968d24c63efD3b1d3E23f8eDD03159F0'; // Replace with your contract address
 
 export function Providers({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nhifContract, setNHIFContract] = useState(null);
@@ -34,10 +34,10 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
         <nav className="bg-customBlue text-white py-4 shadow-md">
           <div className="container mx-auto flex justify-between items-center">
             <Link to="/provider/landing" className="text-2xl font-bold">
-              NHIF Healthcare Providers
+              SHA Healthcare Providers
             </Link>
             <div className="text-right">
-              <h1 className="text-xl font-bold">NHIF Management System</h1>
+              <h1 className="text-xl font-bold">SHA Management System</h1>
               <p>Welcome <b>{selectedAddress}</b></p>
             </div>
             <ul className="flex space-x-4">

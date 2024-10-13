@@ -196,7 +196,7 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
                 <p className="text-lg text-gray-700"><span className="font-semibold">Wallet Balance:</span> {balance ? `${balance.eth} ETH (${balance.ksh} KSH)` : 'N/A'}</p>
               </div>
               <div className="mb-4 col-span-2">
-                <p className="text-lg text-gray-700"><span className="font-semibold">Your Total NHIF Contributions:</span> {totalContributions ? `(${totalContributions.ksh} KSH)` : 'N/A'}</p>
+                <p className="text-lg text-gray-700"><span className="font-semibold">Your Total SHA Contributions:</span> {totalContributions ? `(${totalContributions.ksh} KSH)` : 'N/A'}</p>
               </div>
               <div className="flex items-center justify-between mb-4">
 

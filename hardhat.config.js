@@ -7,7 +7,7 @@ module.exports = {
   networks: {
     localhost: {
       url: 'http://127.0.0.1:8545',
-      // accounts: can be specified here if needed, but usually it's not necessary for local development
+      chainId: 31337,
     },
     // Uncomment and configure the sepolia network if needed
     sepolia: {

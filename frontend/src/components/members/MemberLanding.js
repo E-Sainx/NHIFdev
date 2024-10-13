@@ -6,14 +6,14 @@ const MemberLanding = () => {
     <>
       <Slide direction="down">
         <div className="bg-white shadow-md rounded-md p-6 mb-6 h-full">
-          <h2 className="text-3xl font-bold text-customBlue mb-4">About NHIF Management System</h2>
+          <h2 className="text-3xl font-bold text-customBlue mb-4">About SHA Management System</h2>
         </div>
       </Slide>
       <Slide direction="down">
         <div className="bg-white shadow-md rounded-md p-6 mb-6 h-full">
           <Fade>
             <p className="text-gray-600">
-              The NHIF Management System streamlines registration, contribution, and claim processes for members and healthcare providers, ensuring efficient and transparent healthcare fund management.
+              The SHA Management System streamlines registration, contribution, and claim processes for members and healthcare providers, ensuring efficient and transparent healthcare fund management.
             </p>
           </Fade>
         </div>

@@ -6,7 +6,7 @@ import { ethers } from 'ethers';
 
 
 const AdminDashboard = ({ provider, selectedAddress, setTransactionError, setTxBeingSent }) => {
-  const contractAddress = '0x1E4515B38FDE9660b012214E113FdADBdEaE22f4'; // Replace with your contract address
+  const contractAddress = '0xF3f490dB968d24c63efD3b1d3E23f8eDD03159F0'; // Replace with your contract address
   const [nhifContract, setNHIFContract] = useState(null);
 
   useEffect(() => {
@@ -27,8 +27,8 @@ const AdminDashboard = ({ provider, selectedAddress, setTransactionError, setTxB
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-center text-blue-900 mb-8">NHIF Admin Dashboard</h1>
-      <p className="text-lg text-center text-gray-700 mb-12">Welcome to the NHIF Admin Dashboard. Here you can manage members and providers efficiently.</p>
+      <h1 className="text-4xl font-bold text-center text-blue-900 mb-8">SHA Admin Dashboard</h1>
+      <p className="text-lg text-center text-gray-700 mb-12">Welcome to the SHA Admin Dashboard. Here you can manage members and providers efficiently.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <Link to="/admin/members/register" className="bg-white shadow-md rounded-lg p-6 flex flex-col items-center hover:bg-blue-100">
           <FaUserPlus className="text-4xl text-blue-600 mb-4" />
