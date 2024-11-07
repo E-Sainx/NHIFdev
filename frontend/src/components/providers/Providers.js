@@ -7,7 +7,7 @@ import ProviderActions from './ProviderActions'; // Corrected import
 import ProviderLanding from './ProviderLanding';
 import WithdrawClaim from './WithdrawClaim';
 
-const contractAddress = '0xF3f490dB968d24c63efD3b1d3E23f8eDD03159F0'; // Replace with your contract address
+const contractAddress = '0xa0d7B10035743387b5d683F83a3af7920D110Ca8'; // Replace with your contract address
 
 export function Providers({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nhifContract, setNHIFContract] = useState(null);
