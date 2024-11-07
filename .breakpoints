@@ -4,16 +4,16 @@
       {
         "id": "1feda912-05c0-4ba1-b488-35b4112a89a9",
         "line": 6,
-        "version": 7,
-        "index": 172
+        "version": 1,
+        "index": 226
       }
     ],
     "frontend/src/components/members/MemberActions.js": [
       {
         "id": "ba8f4370-27ff-47a5-b596-a65d02b00b22",
         "line": 75,
-        "version": 66,
-        "index": 3155
+        "version": 1,
+        "index": 3272
       }
     ]
   }
