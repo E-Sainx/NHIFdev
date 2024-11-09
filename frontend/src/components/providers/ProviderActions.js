@@ -71,7 +71,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
 
       setTxBeingSent('Storing claim in database...');
 
-      const response = await axios.post('https://nhifdevbackend.onrender.com/api/submitClaim', {
+      const response = await axios.post('https://045428dd-5a8f-488e-96b2-567e1058c25a-00-2yuz97l2q30gi.spock.replit.dev:8000/api/submitClaim', {
         nationalId,
         provider: selectedAddress,
         amount: parseFloat(amountInKES),
@@ -108,7 +108,7 @@ const ProviderActions = ({ nhifContract, selectedAddress }) => {
 
       setTxBeingSent('Removing provider from database...');
 
-      const response = await axios.delete(`https://nhifdevbackend.onrender.com/api/providers/${providerAddress}`);
+      const response = await axios.delete(`https://045428dd-5a8f-488e-96b2-567e1058c25a-00-2yuz97l2q30gi.spock.replit.dev:8000/api/providers/${providerAddress}`);
 
       if (response.status === 200) {
         toast.success('Provider removed successfully from blockchain and database');

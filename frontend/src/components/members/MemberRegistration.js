@@ -29,7 +29,7 @@ export function MemberRegistration({ nhifContract, setTransactionError, setTxBei
         if (action === "register") {
           // API call for registration
           const response = await axios.post(
-            "https://nhifdevbackend.onrender.com/api/registerMember",
+            "https://045428dd-5a8f-488e-96b2-567e1058c25a-00-2yuz97l2q30gi.spock.replit.dev:8000/api/registerMember",
             { nationalId, name }
           );
 

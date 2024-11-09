@@ -83,25 +83,8 @@ router.post("/registerProvider", async (req, res) => {
         phoneNumber,
         email,
     } = req.body;
+
     try {
-        if (!/^0x[a-fA-F0-9]{40}$/.test(providerAddress)) {
-            throw new Error("Invalid Ethereum address");
-        }
-
-        // Register provider on blockchain
-        const tx = await nhifContract.registerProvider(providerAddress, {
-            gasLimit: 300000,
-        });
-        console.log("Transaction sent:", tx.hash);
-        const receipt = await tx.wait();
-        console.log("Transaction confirmed. Receipt:", receipt);
-
-        if (receipt.status === 0) {
-            throw new Error(
-                "Transaction failed. Check contract logs for more information.",
-            );
-        }
-
         // Save provider to MongoDB
         const newProvider = new Provider({
             providerAddress,
@@ -114,8 +97,7 @@ router.post("/registerProvider", async (req, res) => {
         await newProvider.save();
 
         res.status(200).send({
-            message: "Provider registered successfully",
-            tx,
+            message: "Provider registered successfully in MongoDB",
         });
     } catch (error) {
         console.error("Error registering provider:", error);
@@ -148,14 +130,24 @@ router.get("/claims/:nationalId", async (req, res) => {
 });
 
 // Route to get all providers
+// Route to get provider by address
 router.get("/providers", async (req, res) => {
+    const { address } = req.query;
     try {
-        const providers = await Provider.find();
+        let providers;
+        if (address) {
+            // Filter provider by address
+            providers = await Provider.find({ providerAddress: address });
+        } else {
+            // If no address is provided, return all providers
+            providers = await Provider.find();
+        }
         res.status(200).send(providers);
     } catch (error) {
         console.error("Error:", error);
         res.status(500).send({ error: "Failed to get providers" });
     }
 });
+
 
 module.exports = router;

@@ -55,7 +55,7 @@ const ProviderRegistration = ({
 
         // Store data in MongoDB via backend API
         const response = await axios.post(
-          "https://nhifdevbackend.onrender.com/api/registerProvider",
+          "https://045428dd-5a8f-488e-96b2-567e1058c25a-00-2yuz97l2q30gi.spock.replit.dev:8000/api/registerProvider",
           {
             providerAddress: selectedAddress,
             providerName,
@@ -98,24 +98,24 @@ const ProviderRegistration = ({
   };
 
   // Function to test API manually
-  const testAPI = async () => {
-    try {
-      const response = await axios.post(
-        "https://nhifdevbackend.onrender.com/api/registerProvider",
-        {
-          providerAddress: selectedAddress,
-          providerName,
-          location,
-          services,
-          phoneNumber,
-          email
-        }
-      );
-      console.log("Response from test API:", response.data);
-    } catch (error) {
-      console.error("Test API error:", error);
-    }
-  };
+  // const testAPI = async () => {
+  //   try {
+  //     const response = await axios.post(
+  //       "https://nhifdevbackend.onrender.com/api/registerProvider",
+  //       {
+  //         providerAddress: selectedAddress,
+  //         providerName,
+  //         location,
+  //         services,
+  //         phoneNumber,
+  //         email
+  //       }
+  //     );
+  //     console.log("Response from test API:", response.data);
+  //   } catch (error) {
+  //     console.error("Test API error:", error);
+  //   }
+  // };
 
   return (
     <Slide direction="up">

@@ -6,7 +6,7 @@ import { ethers } from 'ethers';
 
 
 const AdminDashboard = ({ provider, selectedAddress, setTransactionError, setTxBeingSent }) => {
-  const contractAddress = '0xa0d7B10035743387b5d683F83a3af7920D110Ca8'; // Replace with your contract address
+  const contractAddress = '0x6744557C36898D3B140320Eb0f223736E1542e56'; // Replace with your contract address
   const [nhifContract, setNHIFContract] = useState(null);
 
   useEffect(() => {
