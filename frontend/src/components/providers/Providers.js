@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
-import NHIF from '../contracts/Token.json';
-import ProviderRegistration from './ProviderRegistragion'; // Corrected import
-import ProviderActions from './ProviderActions'; // Corrected import
-import ProviderLanding from './ProviderLanding';
-import WithdrawClaim from './WithdrawClaim';
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from "react-router-dom";
+import { ethers } from "ethers";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const contractAddress = '0x6744557C36898D3B140320Eb0f223736E1542e56'; // Replace with your contract address
+import NHIF from "../contracts/Token.json";
+import ProviderRegistration from "./ProviderRegistragion";
+import ProviderActions from "./ProviderActions";
+import ProviderLanding from "./ProviderLanding";
+import WithdrawClaim from "./WithdrawClaim";
+
+const contractAddress = "0x6744557C36898D3B140320Eb0f223736E1542e56";
 
 export function Providers({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nhifContract, setNHIFContract] = useState(null);
@@ -19,8 +22,11 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
           const signer = provider.getSigner();
           const contract = new ethers.Contract(contractAddress, NHIF.abi, signer);
           setNHIFContract(contract);
+          toast.success("Contract initialized successfully.");
         } catch (error) {
-          setTransactionError("Failed to initialize contract: " + error.message);
+          const errorMessage = `Failed to initialize contract: ${error.message}`;
+          setTransactionError(errorMessage);
+          toast.error(errorMessage);
         }
       }
     };
@@ -30,7 +36,8 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
 
   return (
     <Router>
-          <div className="min-h-screen bg-gray-100 flex flex-col">
+      <div className="min-h-screen bg-gray-100 flex flex-col">
+        <ToastContainer position="top-right" autoClose={5000} />
         <nav className="bg-customBlue text-white py-4 shadow-md">
           <div className="container mx-auto flex justify-between items-center">
             <Link to="/provider/landing" className="text-2xl font-bold">

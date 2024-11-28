@@ -121,20 +121,29 @@ const ProviderRegistration = ({
         console.error("Detailed error information:", error);
 
         let errorMessage = "An error occurred. Please try again.";
-        if (
-          error.response &&
-          error.response.data &&
-          error.response.data.error
+
+        // Check for known error patterns
+        if (error.reason) {
+          errorMessage = error.reason; // Use reason if provided (e.g., "Provider already registered")
+        } else if (
+          error.message &&
+          error.message.includes("execution reverted")
         ) {
-          errorMessage = error.response.data.error;
+          // Extract the part of the message starting with "execution reverted"
+          const match = error.message.match(/execution reverted: (.+)/);
+          errorMessage = match ? match[1] : "Execution reverted: Unknown error";
+        } else if (error.response && error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error; // Use error from API response
         } else if (error.message) {
-          errorMessage = error.message;
+          errorMessage = error.message; // Use general error message
         }
 
+        // Update state and show the simplified error message
         setTransactionError("Error registering provider: " + errorMessage);
         setTxBeingSent(null);
-        toast.error("Error registering provider: " + errorMessage);
+        toast.error(errorMessage); // Show the concise error message in the toast
       }
+
     } else {
       console.error("Contract not initialized");
       setTransactionError("Contract not initialized");

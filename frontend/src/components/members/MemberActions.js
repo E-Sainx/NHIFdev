@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { Slide } from 'react-awesome-reveal';
 import { TrendingUp } from 'lucide-react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export function MemberActions({ nhifContract, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nationalId, setNationalId] = useState('');
@@ -84,8 +86,25 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
 
   const handleMakeContribution = async (event) => {
     event.preventDefault();
+
     if (nhifContract && nationalId) {
       try {
+        // Fetch the member's last contribution date
+        const memberStatus = await nhifContract.getMemberStatus(nationalId);
+        const lastContributionDate = new Date(memberStatus[2] * 1000); // Convert timestamp to Date
+        const currentDate = new Date();
+
+        // Check if the last contribution was within the current month
+        if (
+          lastContributionDate.getFullYear() === currentDate.getFullYear() &&
+          lastContributionDate.getMonth() === currentDate.getMonth()
+        ) {
+          // Display a Toastify message
+          toast.error("Member has already contributed for this month.");
+          return; // Stop execution
+        }
+
+        // Proceed with contribution
         const contributionETH = monthlyContributionETH;
         console.log("Making contribution...", nationalId, contributionETH, "ETH");
 
@@ -95,7 +114,7 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
         // First, try to estimate the gas to see if the transaction would revert
         try {
           await nhifContract.estimateGas.makeContribution(nationalId, {
-            value: ethers.utils.parseEther(contributionETH)
+            value: ethers.utils.parseEther(contributionETH),
           });
         } catch (estimateError) {
           if (estimateError.message.includes("Incorrect contribution amount")) {
@@ -107,12 +126,12 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
         setTxStatus('Sending transaction...');
         const tx = await nhifContract.makeContribution(nationalId, {
           value: ethers.utils.parseEther(contributionETH),
-          gasLimit: 200000 // Set a manual gas limit as estimation might still fail
+          gasLimit: 200000, // Set a manual gas limit as estimation might still fail
         });
 
         console.log("Transaction sent:", tx.hash);
         setTxStatus('Transaction sent. Waiting for confirmation...');
-        
+
         const receipt = await tx.wait();
         console.log("Transaction confirmed", receipt);
 
@@ -146,6 +165,7 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
       }
     }
   };
+
 
   return (
     <Slide direction="up">
