@@ -25,23 +25,22 @@ const nhifContract = new ethers.Contract(
 );
 console.log("NHIF Contract Address:", nhifContract.address);
 
-// Example route to register a member
+// Example route to register a member without interacting with the blockchain
 router.post("/registerMember", async (req, res) => {
     const { nationalId, name } = req.body;
     try {
-        const tx = await nhifContract.registerMember(nationalId, name);
-        await tx.wait();
-
-        // Save member to MongoDB
+        // Save member to MongoDB without blockchain interaction
         const newMember = new Member({
             nationalId,
             name,
-            lastContributionDate: null,
-            isActive: true,
+            lastContributionDate: null, // Set to null or an appropriate default
+            isActive: true, // Assuming the member is active initially
         });
+
+        // Save to MongoDB
         await newMember.save();
 
-        res.status(200).send({ message: "Member registered successfully", tx });
+        res.status(200).send({ message: "Member registered successfully" });
     } catch (error) {
         console.error("Error:", error);
         res.status(500).send({ error: "Failed to register member" });
@@ -130,7 +129,6 @@ router.get("/claims/:nationalId", async (req, res) => {
 });
 
 // Route to get all providers
-// Route to get provider by address
 router.get("/providers", async (req, res) => {
     const { address } = req.query;
     try {
@@ -148,6 +146,5 @@ router.get("/providers", async (req, res) => {
         res.status(500).send({ error: "Failed to get providers" });
     }
 });
-
 
 module.exports = router;

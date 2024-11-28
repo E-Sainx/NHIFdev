@@ -6,20 +6,60 @@ import "react-toastify/dist/ReactToastify.css";
 import { ethers } from "ethers";
 
 const counties = [
-  "Baringo", "Bomet", "Bungoma", "Busia", "Elgeyo-Marakwet", "Embu", "Garissa",
-  "Homa Bay", "Isiolo", "Kajiado", "Kakamega", "Kericho", "Kiambu", "Kilifi",
-  "Kirinyaga", "Kisii", "Kisumu", "Kitui", "Kwale", "Laikipia", "Lamu", "Machakos",
-  "Makueni", "Mandera", "Marsabit", "Meru", "Migori", "Mombasa", "Murang'a",
-  "Nairobi", "Nakuru", "Nandi", "Narok", "Nyamira", "Nyandarua", "Nyeri", "Samburu",
-  "Siaya", "Taita-Taveta", "Tana River", "Tharaka-Nithi", "Trans Nzoia", "Turkana",
-  "Uasin Gishu", "Vihiga", "Wajir", "West Pokot"
+  "Baringo",
+  "Bomet",
+  "Bungoma",
+  "Busia",
+  "Elgeyo-Marakwet",
+  "Embu",
+  "Garissa",
+  "Homa Bay",
+  "Isiolo",
+  "Kajiado",
+  "Kakamega",
+  "Kericho",
+  "Kiambu",
+  "Kilifi",
+  "Kirinyaga",
+  "Kisii",
+  "Kisumu",
+  "Kitui",
+  "Kwale",
+  "Laikipia",
+  "Lamu",
+  "Machakos",
+  "Makueni",
+  "Mandera",
+  "Marsabit",
+  "Meru",
+  "Migori",
+  "Mombasa",
+  "Murang'a",
+  "Nairobi",
+  "Nakuru",
+  "Nandi",
+  "Narok",
+  "Nyamira",
+  "Nyandarua",
+  "Nyeri",
+  "Samburu",
+  "Siaya",
+  "Taita-Taveta",
+  "Tana River",
+  "Tharaka-Nithi",
+  "Trans Nzoia",
+  "Turkana",
+  "Uasin Gishu",
+  "Vihiga",
+  "Wajir",
+  "West Pokot",
 ];
 
 const ProviderRegistration = ({
   nhifContract,
   setTransactionError,
   setTxBeingSent,
-  selectedAddress
+  selectedAddress,
 }) => {
   const [providerName, setProviderName] = useState("");
   const [location, setLocation] = useState("");
@@ -35,11 +75,12 @@ const ProviderRegistration = ({
         setTxBeingSent("Registering provider...");
 
         // Estimate gas for the transaction
-        const estimatedGas = await nhifContract.estimateGas.selfRegisterProvider();
+        const estimatedGas =
+          await nhifContract.estimateGas.selfRegisterProvider();
 
         // Register provider on blockchain
         const tx = await nhifContract.selfRegisterProvider({
-          gasLimit: estimatedGas
+          gasLimit: estimatedGas,
         });
         console.log("Transaction sent:", tx.hash);
 
@@ -49,21 +90,21 @@ const ProviderRegistration = ({
 
         if (receipt.status === 0) {
           throw new Error(
-            "Transaction failed. Check contract logs for more information."
+            "Transaction failed. Check contract logs for more information.",
           );
         }
 
         // Store data in MongoDB via backend API
         const response = await axios.post(
-          "https://045428dd-5a8f-488e-96b2-567e1058c25a-00-2yuz97l2q30gi.spock.replit.dev:8000/api/registerProvider",
+          "https://nhifdevbackend.onrender.com/api/registerProvider",
           {
             providerAddress: selectedAddress,
             providerName,
             location,
             services,
             phoneNumber,
-            email
-          }
+            email,
+          },
         );
 
         if (response.status === 200) {
@@ -80,7 +121,11 @@ const ProviderRegistration = ({
         console.error("Detailed error information:", error);
 
         let errorMessage = "An error occurred. Please try again.";
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           errorMessage = error.response.data.error;
         } else if (error.message) {
           errorMessage = error.message;
@@ -118,7 +163,7 @@ const ProviderRegistration = ({
   // };
 
   return (
-    <Slide direction="up">
+    <Slide direction="">
       <div className="mx-auto p-4 bg-white shadow-md rounded-md">
         <h4 className="text-2xl font-bold mb-4 text-customBlue">
           Provider Registration
@@ -224,7 +269,6 @@ const ProviderRegistration = ({
             </button>
           </div>
         </form>
-
       </div>
     </Slide>
   );

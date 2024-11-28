@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
-import NHIF from '../contracts/Token.json';
-import { MemberRegistration } from './MemberRegistration';
-import { MemberActions } from './MemberActions';
-import MemberLanding from './MemberLanding';
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from "react-router-dom";
+import { ethers } from "ethers";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const contractAddress = '0x6744557C36898D3B140320Eb0f223736E1542e56';
+import NHIF from "../contracts/Token.json";
+import { MemberRegistration } from "./MemberRegistration";
+import { MemberActions } from "./MemberActions";
+import MemberLanding from "./MemberLanding";
+
+const contractAddress = "0x6744557C36898D3B140320Eb0f223736E1542e56";
 
 export function Members({ provider, selectedAddress, setTransactionError, setTxBeingSent }) {
   const [nhifContract, setNHIFContract] = useState(null);
@@ -32,6 +35,7 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
   return (
     <Router>
       <div className="min-h-screen bg-gray-100 flex flex-col">
+        <ToastContainer position="top-right" autoClose={5000} />
         <nav className="bg-customBlue text-white py-4 shadow-md">
           <div className="container mx-auto flex justify-between items-center">
             <Link to="/" className="text-2xl font-bold">
@@ -75,7 +79,6 @@ export function Members({ provider, selectedAddress, setTransactionError, setTxB
               element={
                 <MemberRegistration
                   nhifContract={nhifContract}
-                  selectedAddress={selectedAddress}
                   setTransactionError={setTransactionError}
                   setTxBeingSent={setTxBeingSent}
                 />

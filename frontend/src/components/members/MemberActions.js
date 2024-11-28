@@ -174,6 +174,12 @@ export function MemberActions({ nhifContract, selectedAddress, setTransactionErr
           </div>
         </form>
 
+        {memberData && !memberData.isActive && (
+          <div className="p-4 bg-red-100 text-red-600 text-center text-lg font-semibold rounded-md">
+            Member Not Registered
+          </div>
+        )}
+
         {memberData && (
           <div className="mb-8 p-6 bg-gray-100 rounded-lg shadow-sm">
             <h5 className="text-2xl font-semibold mb-6 text-blue-700">Member Data</h5>

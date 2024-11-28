@@ -30,7 +30,7 @@ export function Providers({ provider, selectedAddress, setTransactionError, setT
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100 flex flex-col">
+          <div className="min-h-screen bg-gray-100 flex flex-col">
         <nav className="bg-customBlue text-white py-4 shadow-md">
           <div className="container mx-auto flex justify-between items-center">
             <Link to="/provider/landing" className="text-2xl font-bold">
